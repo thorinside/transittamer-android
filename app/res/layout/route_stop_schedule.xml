@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="88dp"
+    android:paddingLeft="10dp"
+    android:paddingTop="5dp"
+    android:paddingRight="10dp"
+    android:paddingBottom="5dp"
+    android:clickable="false"
+    android:background="#f0eae5">
+
+    <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/rounded_white_border"
+            >
+
+    <TextView
+        android:id="@+id/busRouteText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@+id/stopNameText"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginLeft="10dp"
+        android:layout_toRightOf="@+id/stopNameText"
+        android:text="10"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:textColor="@color/table_text_selector"/>
+
+    <TextView
+        android:id="@+id/stopCodeText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginLeft="60dp"
+        android:text="Stop: 6604"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:textColor="@color/table_text_selector"/>
+
+    <TextView
+        android:id="@+id/stopNameText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/stopCodeText"
+        android:layout_below="@+id/stopCodeText"
+        android:text="Brisebois + Northland E"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:textColor="@color/table_text_selector"/>
+
+    <TextView
+        android:id="@+id/scheduleText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/stopNameText"
+        android:layout_below="@+id/stopNameText"
+        android:layout_marginBottom="4dp"
+        android:text="10:00 >> 12:00"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:textColor="@color/table_text_selector"/>
+
+        </RelativeLayout>
+</RelativeLayout>
