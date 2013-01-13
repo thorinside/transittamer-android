@@ -1,13 +1,8 @@
 package org.nsdev.apps.transittamer.ui;
 
 import android.app.Activity;
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
 import android.location.Location;
 import android.os.Bundle;
-import android.os.Handler;
 import android.support.v4.content.Loader;
 import android.util.Log;
 import android.view.View;
@@ -15,56 +10,32 @@ import android.widget.ListView;
 import com.github.kevinsawicki.wishlist.SingleTypeAdapter;
 import com.google.inject.Inject;
 import com.littlefluffytoys.littlefluffylocationlibrary.LocationInfo;
-import com.littlefluffytoys.littlefluffylocationlibrary.LocationLibrary;
 import org.nsdev.apps.transittamer.BootstrapServiceProvider;
 import org.nsdev.apps.transittamer.R;
 import org.nsdev.apps.transittamer.TransitTamerServiceProvider;
 import org.nsdev.apps.transittamer.core.AvatarLoader;
+import org.nsdev.apps.transittamer.core.BusProvider;
+import org.nsdev.apps.transittamer.service.TransitTamerServiceAsync;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import static org.nsdev.apps.transittamer.core.Constants.Extra.ROUTE;
-import static org.nsdev.apps.transittamer.core.Constants.Extra.STOP;
-
 public class NearestRouteStopFragment extends ItemListFragment<NearestRouteStopInfo> implements DataUpdatedCallback, LocationService {
 
-    @Inject private BootstrapServiceProvider serviceProvider;
-    @Inject private AvatarLoader avatars;
-    @Inject private TransitTamerServiceProvider transitServiceProvider;
+    @Inject
+    private BootstrapServiceProvider serviceProvider;
+    @Inject
+    private AvatarLoader avatars;
+    @Inject
+    private TransitTamerServiceProvider transitServiceProvider;
+    @Inject
+    private BusProvider bus;
 
     private LocationInfo location;
 
     private static final String TAG = "NearestRouteStopFragment";
-
-    private BroadcastReceiver locationReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            location = (LocationInfo) intent.getSerializableExtra("com.littlefluffytoys.littlefluffylocationlibrary.LocationInfo");
-            Log.e(TAG, "Location updated: " + location);
-        }
-    };
-
-    @Override
-    public void onPause() {
-
-        Log.e(TAG, "onPause");
-        getActivity().getApplicationContext().unregisterReceiver(locationReceiver);
-        super.onPause();
-    }
-
-    @Override
-    public void onResume() {
-
-        Log.e(TAG, "onResume");
-        getActivity().getApplicationContext().registerReceiver(locationReceiver, new IntentFilter("org.nsdev.apps.transittamer.littlefluffylocationlibrary.LOCATION_CHANGED"));
-
-        LocationLibrary.forceLocationUpdate(getActivity().getBaseContext());
-        super.onResume();
-
-    }
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
@@ -84,8 +55,6 @@ public class NearestRouteStopFragment extends ItemListFragment<NearestRouteStopI
         //                .inflate(R.layout.user_list_item_labels, null));
     }
 
-
-
     @Override
     public Loader<List<NearestRouteStopInfo>> onCreateLoader(int id, Bundle args) {
 
@@ -96,14 +65,16 @@ public class NearestRouteStopFragment extends ItemListFragment<NearestRouteStopI
 
                 ArrayList<NearestRouteStopInfo> items = new ArrayList<NearestRouteStopInfo>();
 
-                items.add(new NearestRouteStopInfo(getContext(), "10", transitServiceProvider.getService(), NearestRouteStopFragment.this, NearestRouteStopFragment.this));
-                items.add(new NearestRouteStopInfo(getContext(), "37", transitServiceProvider.getService(), NearestRouteStopFragment.this, NearestRouteStopFragment.this));
-                items.add(new NearestRouteStopInfo(getContext(), "43", transitServiceProvider.getService(), NearestRouteStopFragment.this, NearestRouteStopFragment.this));
-                items.add(new NearestRouteStopInfo(getContext(), "137", transitServiceProvider.getService(), NearestRouteStopFragment.this, NearestRouteStopFragment.this));
-                items.add(new NearestRouteStopInfo(getContext(), "143", transitServiceProvider.getService(), NearestRouteStopFragment.this, NearestRouteStopFragment.this));
-                items.add(new NearestRouteStopInfo(getContext(), "24", transitServiceProvider.getService(), NearestRouteStopFragment.this, NearestRouteStopFragment.this));
-                items.add(new NearestRouteStopInfo(getContext(), "17", transitServiceProvider.getService(), NearestRouteStopFragment.this, NearestRouteStopFragment.this));
-                items.add(new NearestRouteStopInfo(getContext(), "302", transitServiceProvider.getService(), NearestRouteStopFragment.this, NearestRouteStopFragment.this));
+                TransitTamerServiceAsync service = transitServiceProvider.get();
+
+                items.add(new NearestRouteStopInfo(getContext(), "10", service, NearestRouteStopFragment.this, NearestRouteStopFragment.this));
+                items.add(new NearestRouteStopInfo(getContext(), "37", service, NearestRouteStopFragment.this, NearestRouteStopFragment.this));
+                items.add(new NearestRouteStopInfo(getContext(), "43", service, NearestRouteStopFragment.this, NearestRouteStopFragment.this));
+                items.add(new NearestRouteStopInfo(getContext(), "137", service, NearestRouteStopFragment.this, NearestRouteStopFragment.this));
+                items.add(new NearestRouteStopInfo(getContext(), "143", service, NearestRouteStopFragment.this, NearestRouteStopFragment.this));
+                items.add(new NearestRouteStopInfo(getContext(), "24", service, NearestRouteStopFragment.this, NearestRouteStopFragment.this));
+                items.add(new NearestRouteStopInfo(getContext(), "17", service, NearestRouteStopFragment.this, NearestRouteStopFragment.this));
+                items.add(new NearestRouteStopInfo(getContext(), "302", service, NearestRouteStopFragment.this, NearestRouteStopFragment.this));
 
                 return items;
             }
@@ -115,9 +86,10 @@ public class NearestRouteStopFragment extends ItemListFragment<NearestRouteStopI
         NearestRouteStopInfo info = (NearestRouteStopInfo) l.getItemAtPosition(position);
 
         if (info.stop != null && info.routes != null) {
-            startActivity(new Intent(getActivity(), TransitMapActivity.class)
-                    .putExtra(STOP, info.stop)
-                    .putExtra(ROUTE, info.routes.get(0)));
+            bus.get().post(new RouteStopClickedEvent(info.stop, info.routes.get(0)));
+//            startActivity(new Intent(getActivity(), TransitMapActivity.class)
+//                    .putExtra(STOP, info.stop)
+//                    .putExtra(ROUTE, info.routes.get(0)));
         }
     }
 
@@ -139,8 +111,7 @@ public class NearestRouteStopFragment extends ItemListFragment<NearestRouteStopI
         return new NearestRouteStopAdapter(getActivity().getLayoutInflater(), R.layout.route_stop_schedule, items);
     }
 
-    private void sortItems(List<NearestRouteStopInfo> items)
-    {
+    private void sortItems(List<NearestRouteStopInfo> items) {
         Collections.sort(items, new Comparator<NearestRouteStopInfo>() {
             @Override
             public int compare(NearestRouteStopInfo lhs, NearestRouteStopInfo rhs) {

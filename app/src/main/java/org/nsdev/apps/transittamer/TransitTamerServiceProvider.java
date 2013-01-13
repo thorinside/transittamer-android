@@ -4,7 +4,7 @@ import android.net.http.AndroidHttpClient;
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import org.apache.http.impl.client.DefaultHttpClient;
+import com.google.inject.Provider;
 import org.nsdev.apps.transittamer.service.TransitTamerServiceAsync;
 import retrofit.http.GsonConverter;
 import retrofit.http.RestAdapter;
@@ -13,7 +13,7 @@ import retrofit.http.Server;
 /**
  * Created by neal 12-12-16 11:10 AM
  */
-public class TransitTamerServiceProvider {
+public class TransitTamerServiceProvider implements Provider<TransitTamerServiceAsync> {
 
     public static final Gson GSON = new GsonBuilder()
             .setDateFormat("yyyyMMdd")
@@ -23,14 +23,14 @@ public class TransitTamerServiceProvider {
     private static RestAdapter restAdapter;
     private static TransitTamerServiceAsync service;
 
-    public TransitTamerServiceAsync getService() {
-
+    @Override
+    public TransitTamerServiceAsync get() {
         if (restAdapter == null) {
             restAdapter = new RestAdapter.Builder()
-                .setServer(new Server("http://nosuchdevice.nsdev.org:10240"))
-                .setClient(AndroidHttpClient.newInstance("TransitTamer-Android"))
-                .setConverter(new GsonConverter(GSON))
-                .build();
+                    .setServer(new Server("http://nosuchdevice.nsdev.org:10240"))
+                    .setClient(AndroidHttpClient.newInstance("TransitTamer-Android"))
+                    .setConverter(new GsonConverter(GSON))
+                    .build();
         }
 
         if (service == null) {

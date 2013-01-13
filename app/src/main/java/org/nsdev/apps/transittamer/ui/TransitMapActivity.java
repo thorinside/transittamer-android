@@ -26,12 +26,16 @@ import static org.nsdev.apps.transittamer.core.Constants.Extra.STOP;
 
 public class TransitMapActivity extends BootstrapActivity {
 
-    @InjectFragment(R.id.smf_map) protected SupportMapFragment mapFragment;
+    @InjectFragment(R.id.smf_map)
+    protected SupportMapFragment mapFragment;
 
-    @InjectExtra(STOP) protected Stop stop;
-    @InjectExtra(ROUTE) protected Route route;
+    @InjectExtra(STOP)
+    protected Stop stop;
+    @InjectExtra(ROUTE)
+    protected Route route;
 
-    @Inject protected TransitTamerServiceProvider transitTamerServiceProvider;
+    @Inject
+    protected TransitTamerServiceProvider transitTamerServiceProvider;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,11 +55,10 @@ public class TransitMapActivity extends BootstrapActivity {
         map.moveCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location.lastLat, location.lastLong), 14));
         map.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(stop.loc.lat, stop.loc.lon), 16));
 
-        transitTamerServiceProvider.getService().getShape(route.routeId, new Callback<ShapeResponse>() {
+        transitTamerServiceProvider.get().getShape(route.routeId, new Callback<ShapeResponse>() {
             @Override
             public void success(ShapeResponse shapeResponse) {
-                for (Shape shape : shapeResponse.shapes)
-                {
+                for (Shape shape : shapeResponse.shapes) {
                     ArrayList<LatLng> latlngs = new ArrayList<LatLng>();
                     for (Point point : shape.points) {
                         latlngs.add(new LatLng(point.loc.lat, point.loc.lon));
@@ -75,7 +78,7 @@ public class TransitMapActivity extends BootstrapActivity {
             }
         });
 
-        transitTamerServiceProvider.getService().getTerseStopsForRoute(route.routeId, true, new Callback<StopsResponse>() {
+        transitTamerServiceProvider.get().getTerseStopsForRoute(route.routeId, true, new Callback<StopsResponse>() {
             @Override
             public void success(StopsResponse stopsResponse) {
                 for (Stop stop : stopsResponse.stops) {

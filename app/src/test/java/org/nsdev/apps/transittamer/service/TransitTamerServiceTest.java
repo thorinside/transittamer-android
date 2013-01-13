@@ -24,7 +24,7 @@ public class TransitTamerServiceTest {
     @Before
     public void setup() {
         TransitTamerServiceProvider provider = new TransitTamerServiceProvider();
-        transitTamerService = provider.getService();
+        transitTamerService = provider.get();
     }
 
     @Test
@@ -920,7 +920,7 @@ public class TransitTamerServiceTest {
         Assert.assertEquals(1, stopDistancesResponse.ok);
         Assert.assertEquals(50, stopDistancesResponse.results.size());
 
-        for(StopDistance dist : stopDistancesResponse.results) {
+        for (StopDistance dist : stopDistancesResponse.results) {
             Assert.assertTrue(dist.dis > 0.0);
             Assert.assertNotNull(dist.obj);
             Assert.assertEquals(dist.obj.stopCode, dist.obj.stopId);
@@ -983,7 +983,7 @@ public class TransitTamerServiceTest {
         Assert.assertEquals(1, routesResponse.ok);
         Assert.assertEquals(2, routesResponse.routes.size());
 
-        for(Route route : routesResponse.routes) {
+        for (Route route : routesResponse.routes) {
             Assert.assertEquals("10", route.routeShortName);
         }
 
@@ -1255,8 +1255,7 @@ public class TransitTamerServiceTest {
 
         Assert.assertNotNull(calendarsResponse);
 
-        for(Calendar calendar : calendarsResponse.calendars)
-        {
+        for (Calendar calendar : calendarsResponse.calendars) {
             Assert.assertNotNull(calendar.startDate);
             Assert.assertNotNull(calendar.endDate);
 
