@@ -10,13 +10,13 @@ import android.view.ViewGroup;
 import android.view.animation.AnimationUtils;
 import android.widget.*;
 import android.widget.AdapterView.OnItemClickListener;
+import com.actionbarsherlock.app.SherlockFragment;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
 import com.github.kevinsawicki.wishlist.SingleTypeAdapter;
 import com.github.kevinsawicki.wishlist.Toaster;
 import com.github.kevinsawicki.wishlist.ViewUtils;
-import com.github.rtyley.android.sherlock.roboguice.fragment.RoboSherlockFragment;
 import org.nsdev.apps.transittamer.R;
 import org.nsdev.apps.transittamer.R.id;
 import org.nsdev.apps.transittamer.R.layout;
@@ -30,7 +30,7 @@ import java.util.List;
  *
  * @param <E>
  */
-public abstract class ItemListFragment<E> extends RoboSherlockFragment
+public abstract class ItemListFragment<E> extends SherlockFragment
         implements LoaderCallbacks<List<E>> {
 
     private static final String FORCE_REFRESH = "forceRefresh";

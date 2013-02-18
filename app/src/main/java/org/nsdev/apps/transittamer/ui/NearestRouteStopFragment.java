@@ -8,13 +8,14 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ListView;
 import com.github.kevinsawicki.wishlist.SingleTypeAdapter;
-import com.google.inject.Inject;
 import com.littlefluffytoys.littlefluffylocationlibrary.LocationInfo;
+import com.squareup.otto.Bus;
+import org.nsdev.apps.transittamer.BootstrapApplication;
 import org.nsdev.apps.transittamer.R;
 import org.nsdev.apps.transittamer.TransitTamerServiceProvider;
-import org.nsdev.apps.transittamer.core.BusProvider;
 import org.nsdev.apps.transittamer.service.TransitTamerServiceAsync;
 
+import javax.inject.Inject;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -23,9 +24,9 @@ import java.util.List;
 public class NearestRouteStopFragment extends ItemListFragment<NearestRouteStopInfo> implements DataUpdatedCallback, LocationService {
 
     @Inject
-    private TransitTamerServiceProvider transitServiceProvider;
+    TransitTamerServiceProvider transitServiceProvider;
     @Inject
-    private BusProvider bus;
+    Bus bus;
 
     private LocationInfo location;
 
@@ -35,6 +36,7 @@ public class NearestRouteStopFragment extends ItemListFragment<NearestRouteStopI
     public void onActivityCreated(Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
 
+        BootstrapApplication.inject(this);
         //setEmptyText(R.string.no_users);
     }
 
@@ -80,7 +82,7 @@ public class NearestRouteStopFragment extends ItemListFragment<NearestRouteStopI
         NearestRouteStopInfo info = (NearestRouteStopInfo) l.getItemAtPosition(position);
 
         if (info.stop != null && info.routes != null) {
-            bus.get().post(new RouteStopClickedEvent(info.stop, info.routes.get(0)));
+            bus.post(new RouteStopClickedEvent(info.stop, info.routes.get(0)));
         }
     }
 

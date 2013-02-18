@@ -7,45 +7,42 @@ import android.content.IntentFilter;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;
+import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.actionbarsherlock.view.Window;
-import com.github.rtyley.android.sherlock.roboguice.activity.RoboSherlockFragmentActivity;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.UiSettings;
 import com.google.android.gms.maps.model.*;
-import com.google.inject.Inject;
 import com.littlefluffytoys.littlefluffylocationlibrary.LocationInfo;
 import com.littlefluffytoys.littlefluffylocationlibrary.LocationLibrary;
+import com.squareup.otto.Bus;
 import com.squareup.otto.Subscribe;
 import com.viewpagerindicator.TitlePageIndicator;
+import org.nsdev.apps.transittamer.BootstrapApplication;
 import org.nsdev.apps.transittamer.R;
 import org.nsdev.apps.transittamer.R.id;
 import org.nsdev.apps.transittamer.TransitTamerServiceProvider;
-import org.nsdev.apps.transittamer.core.BusProvider;
 import org.nsdev.apps.transittamer.service.*;
 import retrofit.http.Callback;
 import retrofit.http.RetrofitError;
-import roboguice.inject.InjectFragment;
-import roboguice.inject.InjectView;
 
+import javax.inject.Inject;
 import java.util.ArrayList;
 
 /**
  * Activity to view the carousel and view pager indicator with fragments.
  */
-public class CarouselActivity extends RoboSherlockFragmentActivity {
+public class CarouselActivity extends SherlockFragmentActivity {
 
-    @InjectView(id.tpi_header)
     protected TitlePageIndicator indicator;
-    @InjectView(id.vp_pages)
     protected ViewPager pager;
-    @InjectFragment(R.id.smf_map)
     protected SupportMapFragment mapFragment;
+
     @Inject
-    private BusProvider bus;
+    Bus bus;
     @Inject
-    private TransitTamerServiceProvider transitServiceProvider;
+    TransitTamerServiceProvider transitServiceProvider;
 
     private static final String TAG = "CarouselActivity";
     private LocationInfo location;
@@ -55,7 +52,7 @@ public class CarouselActivity extends RoboSherlockFragmentActivity {
         @Override
         public void onReceive(Context context, Intent intent) {
             location = (LocationInfo) intent.getSerializableExtra("com.littlefluffytoys.littlefluffylocationlibrary.LocationInfo");
-            bus.get().post(location);
+            bus.post(location);
         }
     };
 
@@ -68,10 +65,17 @@ public class CarouselActivity extends RoboSherlockFragmentActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.carousel_view);
 
+        BootstrapApplication.inject(this);
+
+        indicator = (TitlePageIndicator) findViewById(id.tpi_header);
+        pager = (ViewPager) findViewById(id.vp_pages);
+
         pager.setAdapter(new BootstrapPagerAdapter(getResources(), getSupportFragmentManager()));
 
         indicator.setViewPager(pager);
         pager.setCurrentItem(0);
+
+        mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(id.smf_map);
 
         final GoogleMap map = mapFragment.getMap();
         map.setMyLocationEnabled(false);
@@ -86,7 +90,7 @@ public class CarouselActivity extends RoboSherlockFragmentActivity {
 
     @Override
     protected void onResume() {
-        bus.get().register(this);
+        bus.register(this);
         getApplicationContext().registerReceiver(locationReceiver, new IntentFilter("org.nsdev.apps.transittamer.littlefluffylocationlibrary.LOCATION_CHANGED"));
         LocationLibrary.forceLocationUpdate(getBaseContext());
         super.onResume();    //To change body of overridden methods use File | Settings | File Templates.
@@ -94,7 +98,7 @@ public class CarouselActivity extends RoboSherlockFragmentActivity {
 
     @Override
     protected void onPause() {
-        bus.get().unregister(this);
+        bus.unregister(this);
         getApplicationContext().unregisterReceiver(locationReceiver);
         super.onPause();
     }

@@ -1,28 +1,23 @@
-
-
 package org.nsdev.apps.transittamer;
 
-import static android.os.Build.VERSION.SDK_INT;
-import static android.os.Build.VERSION_CODES.FROYO;
 import android.app.Application;
 import android.app.Instrumentation;
 import android.content.Context;
-
-import com.github.kevinsawicki.http.HttpRequest;
 import com.littlefluffytoys.littlefluffylocationlibrary.LocationLibrary;
+import dagger.ObjectGraph;
+import org.nsdev.apps.transittamer.module.ApplicationModule;
 
 /**
  * TransitTamer application
  */
 public class BootstrapApplication extends Application {
 
+    private static ObjectGraph objectGraph;
+
     /**
      * Create main application
      */
     public BootstrapApplication() {
-        // Disable http.keepAlive on Froyo and below
-        if (SDK_INT <= FROYO)
-            HttpRequest.keepAlive(false);
     }
 
     /**
@@ -48,7 +43,14 @@ public class BootstrapApplication extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+
+        objectGraph = ObjectGraph.create(new ApplicationModule(this));
+
         LocationLibrary.initialiseLibrary(getBaseContext(), "org.nsdev.apps.transittamer");
         LocationLibrary.forceLocationUpdate(getBaseContext());
+    }
+
+    public static <T> void inject(T instance) {
+        objectGraph.inject(instance);
     }
 }

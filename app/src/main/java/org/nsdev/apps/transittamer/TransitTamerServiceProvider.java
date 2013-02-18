@@ -3,12 +3,15 @@ package org.nsdev.apps.transittamer;
 import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.inject.Provider;
 import org.nsdev.apps.transittamer.service.TransitTamerServiceAsync;
 import retrofit.android.AndroidApacheClient;
 import retrofit.http.GsonConverter;
 import retrofit.http.RestAdapter;
 import retrofit.http.Server;
+
+import javax.inject.Inject;
+import javax.inject.Provider;
+import javax.inject.Singleton;
 
 /**
  * Created by neal 12-12-16 11:10 AM
@@ -22,6 +25,12 @@ public class TransitTamerServiceProvider implements Provider<TransitTamerService
 
     private static RestAdapter restAdapter;
     private static TransitTamerServiceAsync service;
+
+    @Inject
+    @Singleton
+    public TransitTamerServiceProvider() {
+
+    }
 
     @Override
     public TransitTamerServiceAsync get() {
