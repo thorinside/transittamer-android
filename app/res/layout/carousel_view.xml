@@ -25,7 +25,15 @@
             android:id="@+id/vp_pages"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="1"/>
+            android:layout_weight="2"
+            />
+
+    <View
+            android:id="@+id/v_sep"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#000"
+            />
 
     <fragment
             android:name="com.google.android.gms.maps.SupportMapFragment"

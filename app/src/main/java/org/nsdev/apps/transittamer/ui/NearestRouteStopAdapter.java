@@ -1,18 +1,12 @@
 package org.nsdev.apps.transittamer.ui;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
-
-import android.location.Location;
 import android.view.LayoutInflater;
 import com.github.kevinsawicki.wishlist.SingleTypeAdapter;
-import com.littlefluffytoys.littlefluffylocationlibrary.LocationInfo;
 import org.nsdev.apps.transittamer.R;
 
-public class NearestRouteStopAdapter extends SingleTypeAdapter<NearestRouteStopInfo>
-{
+import java.util.List;
+
+public class NearestRouteStopAdapter extends SingleTypeAdapter<NearestRouteStopInfo> {
     public NearestRouteStopAdapter(LayoutInflater inflater, int layoutResourceId, List<NearestRouteStopInfo> items) {
         super(inflater, layoutResourceId);
         setItems(items);
@@ -20,7 +14,7 @@ public class NearestRouteStopAdapter extends SingleTypeAdapter<NearestRouteStopI
 
     @Override
     protected int[] getChildViewIds() {
-        return new int[] { R.id.busRouteText, R.id.stopNameText, R.id.scheduleText, R.id.stopCodeText };
+        return new int[]{R.id.busRouteText, R.id.stopNameText, R.id.scheduleText, R.id.stopCodeText};
     }
 
     @Override
@@ -32,8 +26,7 @@ public class NearestRouteStopAdapter extends SingleTypeAdapter<NearestRouteStopI
     }
 
     @Override
-    public void notifyDataSetChanged()
-    {
+    public void notifyDataSetChanged() {
         super.notifyDataSetChanged();
     }
 }

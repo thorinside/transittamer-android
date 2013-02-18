@@ -7,16 +7,13 @@ import android.content.IntentFilter;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;
-import android.util.Log;
 import com.actionbarsherlock.view.Window;
 import com.github.rtyley.android.sherlock.roboguice.activity.RoboSherlockFragmentActivity;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.BitmapDescriptorFactory;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.MarkerOptions;
-import com.google.android.gms.maps.model.PolylineOptions;
+import com.google.android.gms.maps.UiSettings;
+import com.google.android.gms.maps.model.*;
 import com.google.inject.Inject;
 import com.littlefluffytoys.littlefluffylocationlibrary.LocationInfo;
 import com.littlefluffytoys.littlefluffylocationlibrary.LocationLibrary;
@@ -52,12 +49,13 @@ public class CarouselActivity extends RoboSherlockFragmentActivity {
 
     private static final String TAG = "CarouselActivity";
     private LocationInfo location;
+    private Marker me;
 
     private BroadcastReceiver locationReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             location = (LocationInfo) intent.getSerializableExtra("com.littlefluffytoys.littlefluffylocationlibrary.LocationInfo");
-            Log.e(TAG, "Location updated: " + location);
+            bus.get().post(location);
         }
     };
 
@@ -76,7 +74,12 @@ public class CarouselActivity extends RoboSherlockFragmentActivity {
         pager.setCurrentItem(0);
 
         final GoogleMap map = mapFragment.getMap();
-        map.setMyLocationEnabled(true);
+        map.setMyLocationEnabled(false);
+        UiSettings settings = map.getUiSettings();
+        settings.setMyLocationButtonEnabled(true);
+        settings.setZoomControlsEnabled(false);
+
+
         LocationInfo location = new LocationInfo(this.getBaseContext());
         map.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location.lastLat, location.lastLong), 16));
     }
@@ -94,6 +97,23 @@ public class CarouselActivity extends RoboSherlockFragmentActivity {
         bus.get().unregister(this);
         getApplicationContext().unregisterReceiver(locationReceiver);
         super.onPause();
+    }
+
+    @Subscribe
+    public void onLocationUpdated(LocationInfo location) {
+
+        LatLng pos = new LatLng(location.lastLat, location.lastLong);
+        if (me == null) {
+            final GoogleMap map = mapFragment.getMap();
+            me = map.addMarker(new MarkerOptions()
+                    .title(getResources().getString(R.string.you_are_here))
+                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.bus_stop_marker_green))
+                    .anchor(0.5f, 0.5f)
+                    .position(pos));
+        }
+
+        me.setPosition(pos);
+
     }
 
     @Subscribe

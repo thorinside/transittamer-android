@@ -1,7 +1,5 @@
-
 package org.nsdev.apps.transittamer.ui;
 
-import android.accounts.AccountManager;
 import android.app.Activity;
 import android.os.Bundle;
 import android.support.v4.app.LoaderManager.LoaderCallbacks;
@@ -10,32 +8,21 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.animation.AnimationUtils;
-import android.widget.AdapterView;
+import android.widget.*;
 import android.widget.AdapterView.OnItemClickListener;
-import android.widget.ListAdapter;
-import android.widget.ListView;
-import android.widget.ProgressBar;
-import android.widget.TextView;
-
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
-import org.nsdev.apps.transittamer.R;
-import org.nsdev.apps.transittamer.authenticator.LogoutService;
 import com.github.kevinsawicki.wishlist.SingleTypeAdapter;
 import com.github.kevinsawicki.wishlist.Toaster;
 import com.github.kevinsawicki.wishlist.ViewUtils;
+import com.github.rtyley.android.sherlock.roboguice.fragment.RoboSherlockFragment;
+import org.nsdev.apps.transittamer.R;
 import org.nsdev.apps.transittamer.R.id;
 import org.nsdev.apps.transittamer.R.layout;
-import org.nsdev.apps.transittamer.R.menu;
-import com.github.rtyley.android.sherlock.roboguice.fragment.RoboSherlockFragment;
-import com.google.inject.Inject;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.Callable;
-
-import roboguice.util.RoboAsyncTask;
 
 /**
  * Base fragment for displaying a list of items that loads with a progress bar
@@ -46,13 +33,10 @@ import roboguice.util.RoboAsyncTask;
 public abstract class ItemListFragment<E> extends RoboSherlockFragment
         implements LoaderCallbacks<List<E>> {
 
-    @Inject protected LogoutService logoutService;
-
     private static final String FORCE_REFRESH = "forceRefresh";
 
     /**
-     * @param args
-     *            bundle passed to the loader by the LoaderManager
+     * @param args bundle passed to the loader by the LoaderManager
      * @return true if the bundle indicates a requested forced refresh of the
      *         items
      */
@@ -97,7 +81,7 @@ public abstract class ItemListFragment<E> extends RoboSherlockFragment
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
-            Bundle savedInstanceState) {
+                             Bundle savedInstanceState) {
         return inflater.inflate(layout.item_list, null);
     }
 
@@ -123,7 +107,7 @@ public abstract class ItemListFragment<E> extends RoboSherlockFragment
 
             @Override
             public void onItemClick(AdapterView<?> parent, View view,
-                    int position, long id) {
+                                    int position, long id) {
                 onListItemClick((ListView) parent, view, position, id);
             }
         });
@@ -161,26 +145,12 @@ public abstract class ItemListFragment<E> extends RoboSherlockFragment
         if (!isUsable())
             return false;
         switch (item.getItemId()) {
-        case id.refresh:
-            forceRefresh();
-            return true;
-        case R.id.logout:
-            logout();
-            return true;
-        default:
-            return super.onOptionsItemSelected(item);
-        }
-    }
-
-    private void logout() {
-        logoutService.logout(new Runnable() {
-            @Override
-            public void run() {
-                // Calling a refresh will force the service to look for a logged in user
-                // and when it finds none the user will be requested to log in again.
+            case id.refresh:
                 forceRefresh();
-            }
-        });
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
     }
 
     /**
@@ -368,7 +338,7 @@ public abstract class ItemListFragment<E> extends RoboSherlockFragment
      * @return this fragment
      */
     public ItemListFragment<E> setListShown(final boolean shown,
-            final boolean animate) {
+                                            final boolean animate) {
         if (!isUsable())
             return this;
 

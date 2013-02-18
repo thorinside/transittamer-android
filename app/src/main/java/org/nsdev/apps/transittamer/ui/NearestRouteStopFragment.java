@@ -10,10 +10,8 @@ import android.widget.ListView;
 import com.github.kevinsawicki.wishlist.SingleTypeAdapter;
 import com.google.inject.Inject;
 import com.littlefluffytoys.littlefluffylocationlibrary.LocationInfo;
-import org.nsdev.apps.transittamer.BootstrapServiceProvider;
 import org.nsdev.apps.transittamer.R;
 import org.nsdev.apps.transittamer.TransitTamerServiceProvider;
-import org.nsdev.apps.transittamer.core.AvatarLoader;
 import org.nsdev.apps.transittamer.core.BusProvider;
 import org.nsdev.apps.transittamer.service.TransitTamerServiceAsync;
 
@@ -24,10 +22,6 @@ import java.util.List;
 
 public class NearestRouteStopFragment extends ItemListFragment<NearestRouteStopInfo> implements DataUpdatedCallback, LocationService {
 
-    @Inject
-    private BootstrapServiceProvider serviceProvider;
-    @Inject
-    private AvatarLoader avatars;
     @Inject
     private TransitTamerServiceProvider transitServiceProvider;
     @Inject
@@ -87,9 +81,6 @@ public class NearestRouteStopFragment extends ItemListFragment<NearestRouteStopI
 
         if (info.stop != null && info.routes != null) {
             bus.get().post(new RouteStopClickedEvent(info.stop, info.routes.get(0)));
-//            startActivity(new Intent(getActivity(), TransitMapActivity.class)
-//                    .putExtra(STOP, info.stop)
-//                    .putExtra(ROUTE, info.routes.get(0)));
         }
     }
 
