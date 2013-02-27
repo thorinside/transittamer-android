@@ -7,7 +7,6 @@ import android.content.IntentFilter;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;
-import android.util.Log;
 import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.actionbarsherlock.view.Window;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -90,8 +89,6 @@ public class CarouselActivity extends SherlockFragmentActivity {
         map.setOnCameraChangeListener(new GoogleMap.OnCameraChangeListener() {
             @Override
             public void onCameraChange(CameraPosition cameraPosition) {
-                Log.e("NAS", "Camera Position Change: " + cameraPosition.zoom);
-
                 showStopMarkers(cameraPosition.zoom > 13);
             }
         });
@@ -151,6 +148,7 @@ public class CarouselActivity extends SherlockFragmentActivity {
         map.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(stop.loc.lat, stop.loc.lon), 16));
         map.clear();
         stopMarkers.clear();
+        stopCircles.clear();
 
         transitServiceProvider.get().getShape(route.routeId, new Callback<ShapeResponse>() {
             @Override
