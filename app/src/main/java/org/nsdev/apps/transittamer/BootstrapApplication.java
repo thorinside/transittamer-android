@@ -1,7 +1,6 @@
 package org.nsdev.apps.transittamer;
 
 import android.app.Application;
-import android.app.Instrumentation;
 import android.content.Context;
 import com.littlefluffytoys.littlefluffylocationlibrary.LocationLibrary;
 import dagger.ObjectGraph;
@@ -20,37 +19,22 @@ public class BootstrapApplication extends Application {
     public BootstrapApplication() {
     }
 
-    /**
-     * Create main application
-     *
-     * @param context
-     */
-    public BootstrapApplication(final Context context) {
-        this();
-        attachBaseContext(context);
-    }
-
-    /**
-     * Create main application
-     *
-     * @param instrumentation
-     */
-    public BootstrapApplication(final Instrumentation instrumentation) {
-        this();
-        attachBaseContext(instrumentation.getTargetContext());
-    }
-
     @Override
     public void onCreate() {
         super.onCreate();
 
         objectGraph = ObjectGraph.create(new ApplicationModule(this));
 
-        LocationLibrary.initialiseLibrary(getBaseContext(), "org.nsdev.apps.transittamer");
+        LocationLibrary.initialiseLibrary(getBaseContext(), 1000 * 60 * 2, 1000 * 60 * 1, "org.nsdev.apps.transittamer");
+        LocationLibrary.showDebugOutput(true);
         LocationLibrary.forceLocationUpdate(getBaseContext());
     }
 
     public static <T> void inject(T instance) {
         objectGraph.inject(instance);
+    }
+
+    public static BootstrapApplication from(Context context) {
+        return (BootstrapApplication) context.getApplicationContext();
     }
 }

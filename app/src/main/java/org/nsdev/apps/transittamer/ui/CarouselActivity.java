@@ -7,6 +7,7 @@ import android.content.IntentFilter;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;
+import android.util.Log;
 import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.actionbarsherlock.view.Window;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -41,12 +42,15 @@ public class CarouselActivity extends SherlockFragmentActivity {
 
     @Inject
     Bus bus;
+
     @Inject
     TransitTamerServiceProvider transitServiceProvider;
 
     private static final String TAG = "CarouselActivity";
     private LocationInfo location;
     private Marker me;
+    private ArrayList<Marker> stopMarkers = new ArrayList<Marker>();
+    private ArrayList<Circle> stopCircles = new ArrayList<Circle>();
 
     private BroadcastReceiver locationReceiver = new BroadcastReceiver() {
         @Override
@@ -83,9 +87,27 @@ public class CarouselActivity extends SherlockFragmentActivity {
         settings.setMyLocationButtonEnabled(true);
         settings.setZoomControlsEnabled(false);
 
+        map.setOnCameraChangeListener(new GoogleMap.OnCameraChangeListener() {
+            @Override
+            public void onCameraChange(CameraPosition cameraPosition) {
+                Log.e("NAS", "Camera Position Change: " + cameraPosition.zoom);
+
+                showStopMarkers(cameraPosition.zoom > 13);
+            }
+        });
+
 
         LocationInfo location = new LocationInfo(this.getBaseContext());
         map.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location.lastLat, location.lastLong), 16));
+    }
+
+    private void showStopMarkers(boolean show) {
+        for (Marker marker : stopMarkers) {
+            marker.setVisible(show);
+        }
+        for (Circle circle : stopCircles) {
+            circle.setVisible(!show);
+        }
     }
 
     @Override
@@ -128,6 +150,7 @@ public class CarouselActivity extends SherlockFragmentActivity {
         final GoogleMap map = mapFragment.getMap();
         map.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(stop.loc.lat, stop.loc.lon), 16));
         map.clear();
+        stopMarkers.clear();
 
         transitServiceProvider.get().getShape(route.routeId, new Callback<ShapeResponse>() {
             @Override
@@ -159,12 +182,27 @@ public class CarouselActivity extends SherlockFragmentActivity {
 
                     if (s.stopCode.equals(stop.stopCode)) continue;
 
-                    map.addMarker(new MarkerOptions()
-                            .title(s.stopCode)
-                            .position(new LatLng(s.loc.lat, s.loc.lon))
-                            .icon(BitmapDescriptorFactory.fromResource(R.drawable.bus_stop_marker_green))
-                            .anchor(0.5f, 0.5f)
+                    LatLng stopPosition = new LatLng(s.loc.lat, s.loc.lon);
+                    stopMarkers.add(
+                            map.addMarker(new MarkerOptions()
+                                    .title(s.stopCode)
+                                    .position(stopPosition)
+                                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.bus_stop_marker_green))
+                                    .visible(true)
+                                    .anchor(0.5f, 0.5f)
+                            ));
+
+                    stopCircles.add(
+                            map.addCircle(new CircleOptions()
+                                    .center(stopPosition)
+                                    .fillColor(Color.GREEN)
+                                    .strokeColor(Color.GREEN)
+                                    .zIndex(100)
+                                    .radius(8)
+                                    .visible(false))
                     );
+
+
                 }
 
                 map.addMarker(

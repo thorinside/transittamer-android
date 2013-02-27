@@ -19,6 +19,7 @@
     <properties>
         <abs.version>4.2.0</abs.version>
         <dagger.version>1.0-SNAPSHOT</dagger.version>
+        <gps.version>5</gps.version>
     </properties>
     <dependencies>
         <dependency>
@@ -107,13 +108,13 @@
         <dependency>
             <groupId>com.google.android.gms</groupId>
             <artifactId>google-play-services</artifactId>
-            <version>4</version>
+            <version>${gps.version}</version>
             <type>apklib</type>
         </dependency>
         <dependency>
             <groupId>com.google.android.gms</groupId>
             <artifactId>google-play-services</artifactId>
-            <version>4</version>
+            <version>${gps.version}</version>
             <type>jar</type>
         </dependency>
         <dependency>
@@ -144,6 +145,12 @@
             <artifactId>dagger</artifactId>
             <version>${dagger.version}</version>
         </dependency>
+        <dependency>
+            <groupId>com.squareup</groupId>
+            <artifactId>dagger-compiler</artifactId>
+            <version>${dagger.version}</version>
+            <scope>provided</scope>
+        </dependency>
 
         <dependency>
             <groupId>com.littlefluffytoys</groupId>
@@ -165,10 +172,19 @@
             <plugin>
                 <groupId>com.jayway.maven.plugins.android.generation2</groupId>
                 <artifactId>android-maven-plugin</artifactId>
+                <version>3.5.0</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <sdk>
+                        <platform>16</platform>
+                    </sdk>
+                    <undeployBeforeDeploy>true</undeployBeforeDeploy>
+                </configuration>
+
             </plugin>
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>2.3.2</version>
+                <version>3.0</version>
                 <configuration>
                     <source>1.6</source>
                     <target>1.6</target>
