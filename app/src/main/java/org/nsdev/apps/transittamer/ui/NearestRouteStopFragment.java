@@ -7,6 +7,7 @@ import android.support.v4.content.Loader;
 import android.util.Log;
 import android.view.View;
 import android.widget.ListView;
+import com.actionbarsherlock.view.MenuItem;
 import com.github.kevinsawicki.wishlist.SingleTypeAdapter;
 import com.littlefluffytoys.littlefluffylocationlibrary.LocationInfo;
 import com.squareup.otto.Bus;
@@ -49,6 +50,16 @@ public class NearestRouteStopFragment extends ItemListFragment<NearestRouteStopI
 
         //getListAdapter().addHeader(activity.getLayoutInflater()
         //                .inflate(R.layout.user_list_item_labels, null));
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == R.id.show_my_location) {
+            bus.post(new ToggleLocationEvent());
+            return true;
+        } else {
+            return super.onOptionsItemSelected(item);
+        }
     }
 
     @Override

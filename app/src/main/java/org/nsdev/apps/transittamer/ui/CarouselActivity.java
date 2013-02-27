@@ -47,7 +47,7 @@ public class CarouselActivity extends SherlockFragmentActivity {
 
     private static final String TAG = "CarouselActivity";
     private LocationInfo location;
-    private Marker me;
+    private Circle me;
     private ArrayList<Marker> stopMarkers = new ArrayList<Marker>();
     private ArrayList<Circle> stopCircles = new ArrayList<Circle>();
 
@@ -89,10 +89,9 @@ public class CarouselActivity extends SherlockFragmentActivity {
         map.setOnCameraChangeListener(new GoogleMap.OnCameraChangeListener() {
             @Override
             public void onCameraChange(CameraPosition cameraPosition) {
-                showStopMarkers(cameraPosition.zoom > 13);
+                showStopMarkers(cameraPosition.zoom > 14);
             }
         });
-
 
         LocationInfo location = new LocationInfo(this.getBaseContext());
         map.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location.lastLat, location.lastLong), 16));
@@ -123,20 +122,26 @@ public class CarouselActivity extends SherlockFragmentActivity {
     }
 
     @Subscribe
-    public void onLocationUpdated(LocationInfo location) {
+    public void onToggleLocationEvent(ToggleLocationEvent event) {
+        GoogleMap map = mapFragment.getMap();
+        map.setMyLocationEnabled(!map.isMyLocationEnabled());
+    }
 
+    @Subscribe
+    public void onLocationUpdated(LocationInfo location) {
+        /*
         LatLng pos = new LatLng(location.lastLat, location.lastLong);
         if (me == null) {
             final GoogleMap map = mapFragment.getMap();
-            me = map.addMarker(new MarkerOptions()
-                    .title(getResources().getString(R.string.you_are_here))
-                    .icon(BitmapDescriptorFactory.fromResource(R.drawable.bus_stop_marker_green))
-                    .anchor(0.5f, 0.5f)
-                    .position(pos));
+            me = map.addCircle(new CircleOptions()
+                    .center(pos)
+                    .radius(location.lastAccuracy)
+                    .fillColor(Color.argb(50, 0, 20, 255))
+                    .strokeColor(Color.rgb(0, 20, 255)));
         }
 
-        me.setPosition(pos);
-
+        me.setCenter(pos);
+        */
     }
 
     @Subscribe

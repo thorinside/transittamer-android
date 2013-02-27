@@ -38,6 +38,7 @@
     <string name="data_error">Data Error</string>
     <string name="page_nearest_route_stops">Favourite Routes</string>
     <string name="you_are_here">You Are Here</string>
+    <string name="show_my_location">Show My Location</string>
 
 
 </resources>
