@@ -81,20 +81,23 @@ public class CarouselActivity extends SherlockFragmentActivity {
         mapFragment = (SupportMapFragment) getSupportFragmentManager().findFragmentById(id.smf_map);
 
         final GoogleMap map = mapFragment.getMap();
-        map.setMyLocationEnabled(false);
-        UiSettings settings = map.getUiSettings();
-        settings.setMyLocationButtonEnabled(true);
-        settings.setZoomControlsEnabled(false);
 
-        map.setOnCameraChangeListener(new GoogleMap.OnCameraChangeListener() {
-            @Override
-            public void onCameraChange(CameraPosition cameraPosition) {
-                showStopMarkers(cameraPosition.zoom > 14);
-            }
-        });
+        if (map != null) {
+            map.setMyLocationEnabled(false);
+            UiSettings settings = map.getUiSettings();
+            settings.setMyLocationButtonEnabled(true);
+            settings.setZoomControlsEnabled(false);
 
-        LocationInfo location = new LocationInfo(this.getBaseContext());
-        map.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location.lastLat, location.lastLong), 16));
+            map.setOnCameraChangeListener(new GoogleMap.OnCameraChangeListener() {
+                @Override
+                public void onCameraChange(CameraPosition cameraPosition) {
+                    showStopMarkers(cameraPosition.zoom > 14);
+                }
+            });
+
+            LocationInfo location = new LocationInfo(this.getBaseContext());
+            map.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location.lastLat, location.lastLong), 16));
+        }
     }
 
     private void showStopMarkers(boolean show) {

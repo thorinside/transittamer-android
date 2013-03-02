@@ -4,9 +4,13 @@ import android.app.Activity;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.v4.content.Loader;
+import android.text.InputType;
 import android.util.Log;
 import android.view.View;
 import android.widget.ListView;
+import android.widget.SearchView;
+import com.actionbarsherlock.view.Menu;
+import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
 import com.github.kevinsawicki.wishlist.SingleTypeAdapter;
 import com.littlefluffytoys.littlefluffylocationlibrary.LocationInfo;
@@ -30,6 +34,7 @@ public class NearestRouteStopFragment extends ItemListFragment<NearestRouteStopI
     Bus bus;
 
     private LocationInfo location;
+    private String queryText = null;
 
     private static final String TAG = "NearestRouteStopFragment";
 
@@ -53,6 +58,32 @@ public class NearestRouteStopFragment extends ItemListFragment<NearestRouteStopI
     }
 
     @Override
+    public void onCreateOptionsMenu(Menu optionsMenu, MenuInflater inflater) {
+        super.onCreateOptionsMenu(optionsMenu, inflater);
+
+        // Hook into the seearch action.
+        final SearchView searchView = (SearchView) optionsMenu.findItem(R.id.menu_search).getActionView();
+        searchView.setInputType(InputType.TYPE_CLASS_NUMBER | InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
+        searchView.setQueryHint(getResources().getString(R.string.search_query_hint_bus_number));
+        searchView.setSubmitButtonEnabled(false);
+
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String s) {
+                queryText = s;
+                refreshWithProgress();
+                return true;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String s) {
+                return false;
+            }
+        });
+
+    }
+
+    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         if (item.getItemId() == R.id.show_my_location) {
             bus.post(new ToggleLocationEvent());
@@ -72,16 +103,12 @@ public class NearestRouteStopFragment extends ItemListFragment<NearestRouteStopI
 
                 ArrayList<NearestRouteStopInfo> items = new ArrayList<NearestRouteStopInfo>();
 
-                TransitTamerServiceAsync service = transitServiceProvider.get();
+                if (queryText != null) {
 
-                items.add(new NearestRouteStopInfo(getContext(), "10", service, NearestRouteStopFragment.this, NearestRouteStopFragment.this));
-                items.add(new NearestRouteStopInfo(getContext(), "37", service, NearestRouteStopFragment.this, NearestRouteStopFragment.this));
-                items.add(new NearestRouteStopInfo(getContext(), "43", service, NearestRouteStopFragment.this, NearestRouteStopFragment.this));
-                items.add(new NearestRouteStopInfo(getContext(), "137", service, NearestRouteStopFragment.this, NearestRouteStopFragment.this));
-                items.add(new NearestRouteStopInfo(getContext(), "143", service, NearestRouteStopFragment.this, NearestRouteStopFragment.this));
-                items.add(new NearestRouteStopInfo(getContext(), "24", service, NearestRouteStopFragment.this, NearestRouteStopFragment.this));
-                items.add(new NearestRouteStopInfo(getContext(), "17", service, NearestRouteStopFragment.this, NearestRouteStopFragment.this));
-                items.add(new NearestRouteStopInfo(getContext(), "302", service, NearestRouteStopFragment.this, NearestRouteStopFragment.this));
+                    TransitTamerServiceAsync service = transitServiceProvider.get();
+
+                    items.add(new NearestRouteStopInfo(getContext(), queryText, service, NearestRouteStopFragment.this, NearestRouteStopFragment.this));
+                }
 
                 return items;
             }

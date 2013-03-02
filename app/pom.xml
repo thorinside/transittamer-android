@@ -215,6 +215,7 @@
                     <plugin>
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-jarsigner-plugin</artifactId>
+                        <version>1.2</version>
                         <executions>
                             <execution>
                                 <id>signing</id>
@@ -252,6 +253,7 @@
                                 <debug>false</debug>
                             </sign>
                             <zipalign>
+                                <skip>false</skip>
                                 <verbose>true</verbose>
                                 <outputApk>
                                     ${project.build.directory}/${project.artifactId}-${project.version}-signed-aligned.apk
