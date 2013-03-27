@@ -15,6 +15,7 @@ import com.actionbarsherlock.view.MenuItem;
 import com.github.kevinsawicki.wishlist.SingleTypeAdapter;
 import com.littlefluffytoys.littlefluffylocationlibrary.LocationInfo;
 import com.squareup.otto.Bus;
+import com.squareup.otto.Subscribe;
 import org.nsdev.apps.transittamer.BootstrapApplication;
 import org.nsdev.apps.transittamer.R;
 import org.nsdev.apps.transittamer.TransitTamerServiceProvider;
@@ -26,7 +27,8 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-public class NearestRouteStopFragment extends ItemListFragment<NearestRouteStopInfo> implements DataUpdatedCallback, LocationService {
+public class NearestRouteStopFragment extends ItemListFragment<NearestRouteStopInfo> implements DataUpdatedCallback, LocationService
+{
 
     @Inject
     TransitTamerServiceProvider transitServiceProvider;
@@ -39,7 +41,8 @@ public class NearestRouteStopFragment extends ItemListFragment<NearestRouteStopI
     private static final String TAG = "NearestRouteStopFragment";
 
     @Override
-    public void onActivityCreated(Bundle savedInstanceState) {
+    public void onActivityCreated(Bundle savedInstanceState)
+    {
         super.onActivityCreated(savedInstanceState);
 
         BootstrapApplication.inject(this);
@@ -47,7 +50,8 @@ public class NearestRouteStopFragment extends ItemListFragment<NearestRouteStopI
     }
 
     @Override
-    protected void configureList(Activity activity, ListView listView) {
+    protected void configureList(Activity activity, ListView listView)
+    {
         super.configureList(activity, listView);
 
         listView.setFastScrollEnabled(true);
@@ -58,7 +62,8 @@ public class NearestRouteStopFragment extends ItemListFragment<NearestRouteStopI
     }
 
     @Override
-    public void onCreateOptionsMenu(Menu optionsMenu, MenuInflater inflater) {
+    public void onCreateOptionsMenu(Menu optionsMenu, MenuInflater inflater)
+    {
         super.onCreateOptionsMenu(optionsMenu, inflater);
 
         // Hook into the seearch action.
@@ -67,16 +72,19 @@ public class NearestRouteStopFragment extends ItemListFragment<NearestRouteStopI
         searchView.setQueryHint(getResources().getString(R.string.search_query_hint_bus_number));
         searchView.setSubmitButtonEnabled(false);
 
-        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener()
+        {
             @Override
-            public boolean onQueryTextSubmit(String s) {
+            public boolean onQueryTextSubmit(String s)
+            {
                 queryText = s;
                 refreshWithProgress();
                 return true;
             }
 
             @Override
-            public boolean onQueryTextChange(String s) {
+            public boolean onQueryTextChange(String s)
+            {
                 return false;
             }
         });
@@ -84,26 +92,34 @@ public class NearestRouteStopFragment extends ItemListFragment<NearestRouteStopI
     }
 
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == R.id.show_my_location) {
+    public boolean onOptionsItemSelected(MenuItem item)
+    {
+        if (item.getItemId() == R.id.show_my_location)
+        {
             bus.post(new ToggleLocationEvent());
             return true;
-        } else {
+        }
+        else
+        {
             return super.onOptionsItemSelected(item);
         }
     }
 
     @Override
-    public Loader<List<NearestRouteStopInfo>> onCreateLoader(int id, Bundle args) {
+    public Loader<List<NearestRouteStopInfo>> onCreateLoader(int id, Bundle args)
+    {
 
-        return new ThrowableLoader<List<NearestRouteStopInfo>>(getActivity(), items) {
+        return new ThrowableLoader<List<NearestRouteStopInfo>>(getActivity(), items)
+        {
 
             @Override
-            public List<NearestRouteStopInfo> loadData() throws Exception {
+            public List<NearestRouteStopInfo> loadData() throws Exception
+            {
 
                 ArrayList<NearestRouteStopInfo> items = new ArrayList<NearestRouteStopInfo>();
 
-                if (queryText != null) {
+                if (queryText != null)
+                {
 
                     TransitTamerServiceAsync service = transitServiceProvider.get();
 
@@ -116,36 +132,44 @@ public class NearestRouteStopFragment extends ItemListFragment<NearestRouteStopI
 
     }
 
-    public void onListItemClick(ListView l, View v, int position, long id) {
+    public void onListItemClick(ListView l, View v, int position, long id)
+    {
         NearestRouteStopInfo info = (NearestRouteStopInfo) l.getItemAtPosition(position);
 
-        if (info.stop != null && info.routes != null) {
+        if (info.stop != null && info.routes != null)
+        {
             bus.post(new RouteStopClickedEvent(info.stop, info.routes.get(0)));
         }
     }
 
     @Override
-    public void onLoadFinished(Loader<List<NearestRouteStopInfo>> loader, List<NearestRouteStopInfo> items) {
+    public void onLoadFinished(Loader<List<NearestRouteStopInfo>> loader, List<NearestRouteStopInfo> items)
+    {
         sortItems(items);
         super.onLoadFinished(loader, items);
 
     }
 
     @Override
-    protected int getErrorMessage(Exception exception) {
+    protected int getErrorMessage(Exception exception)
+    {
         return R.string.error_loading_users;
     }
 
     @Override
-    protected SingleTypeAdapter<NearestRouteStopInfo> createAdapter(List<NearestRouteStopInfo> items) {
+    protected SingleTypeAdapter<NearestRouteStopInfo> createAdapter(List<NearestRouteStopInfo> items)
+    {
         sortItems(items);
         return new NearestRouteStopAdapter(getActivity().getLayoutInflater(), R.layout.route_stop_schedule, items);
     }
 
-    private void sortItems(List<NearestRouteStopInfo> items) {
-        Collections.sort(items, new Comparator<NearestRouteStopInfo>() {
+    private void sortItems(List<NearestRouteStopInfo> items)
+    {
+        Collections.sort(items, new Comparator<NearestRouteStopInfo>()
+        {
             @Override
-            public int compare(NearestRouteStopInfo lhs, NearestRouteStopInfo rhs) {
+            public int compare(NearestRouteStopInfo lhs, NearestRouteStopInfo rhs)
+            {
                 if (lhs.stop == null || rhs.stop == null || location == null)
                     return 0;
 
@@ -185,16 +209,42 @@ public class NearestRouteStopFragment extends ItemListFragment<NearestRouteStopI
     }
 
     @Override
-    public void dataUpdated() {
+    public void dataUpdated()
+    {
         Log.e(TAG, "dataUpdated()");
     }
 
     @Override
-    public LocationInfo getLocation() {
+    public LocationInfo getLocation()
+    {
         Log.e(TAG, "getLocation()");
-        if (getActivity() != null) {
+        if (getActivity() != null)
+        {
             location = new LocationInfo(getActivity().getBaseContext());
         }
         return location;
     }
+
+    @Override
+    public void onPause()
+    {
+        super.onPause();
+        bus.unregister(this);
+    }
+
+    @Override
+    public void onResume()
+    {
+        super.onResume();
+        bus.register(this);
+    }
+
+    @Subscribe
+    public void onLocationUpdated(LocationInfo location)
+    {
+        Log.e("LOCATION", location.toString());
+        this.location = location;
+    }
+
+
 }

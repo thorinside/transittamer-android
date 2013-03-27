@@ -9,32 +9,37 @@ import org.nsdev.apps.transittamer.module.ApplicationModule;
 /**
  * TransitTamer application
  */
-public class BootstrapApplication extends Application {
+public class BootstrapApplication extends Application
+{
 
     private static ObjectGraph objectGraph;
 
     /**
      * Create main application
      */
-    public BootstrapApplication() {
+    public BootstrapApplication()
+    {
     }
 
     @Override
-    public void onCreate() {
+    public void onCreate()
+    {
         super.onCreate();
 
         objectGraph = ObjectGraph.create(new ApplicationModule(this));
 
-        LocationLibrary.initialiseLibrary(getBaseContext(), 1000 * 60 * 2, 1000 * 60 * 1, "org.nsdev.apps.transittamer");
+        LocationLibrary.initialiseLibrary(getBaseContext(), true, "org.nsdev.apps.transittamer");
         LocationLibrary.showDebugOutput(true);
         LocationLibrary.forceLocationUpdate(getBaseContext());
     }
 
-    public static <T> void inject(T instance) {
+    public static <T> void inject(T instance)
+    {
         objectGraph.inject(instance);
     }
 
-    public static BootstrapApplication from(Context context) {
+    public static BootstrapApplication from(Context context)
+    {
         return (BootstrapApplication) context.getApplicationContext();
     }
 }

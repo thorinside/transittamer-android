@@ -59,13 +59,6 @@
             <type>jar</type>
             <scope>provided</scope>
         </dependency>
-        <!--
-        <dependency>
-            <groupId>com.github.kevinsawicki</groupId>
-            <artifactId>http-request</artifactId>
-            <version>2.1</version>
-        </dependency>
-        -->
         <dependency>
             <groupId>com.viewpagerindicator</groupId>
             <artifactId>library</artifactId>
@@ -77,13 +70,6 @@
             <artifactId>library</artifactId>
             <version>2.2.0</version>
         </dependency>
-        <!--
-        <dependency>
-            <groupId>com.github.kevinsawicki</groupId>
-            <artifactId>android-pusher</artifactId>
-            <version>0.6</version>
-        </dependency>
-        -->
         <dependency>
             <groupId>com.github.kevinsawicki</groupId>
             <artifactId>wishlist</artifactId>
@@ -123,12 +109,14 @@
             <version>4.10</version>
             <scope>test</scope>
         </dependency>
+        <!--
         <dependency>
             <groupId>org.hamcrest</groupId>
             <artifactId>hamcrest-library</artifactId>
             <version>1.3.RC2</version>
             <scope>test</scope>
         </dependency>
+        -->
         <dependency>
             <groupId>org.mockito</groupId>
             <artifactId>mockito-core</artifactId>
@@ -141,15 +129,20 @@
             <version>1.3.2</version>
         </dependency>
         <dependency>
-            <groupId>com.squareup</groupId>
+            <groupId>com.squareup.dagger</groupId>
             <artifactId>dagger</artifactId>
             <version>${dagger.version}</version>
         </dependency>
         <dependency>
-            <groupId>com.squareup</groupId>
+            <groupId>com.squareup.dagger</groupId>
             <artifactId>dagger-compiler</artifactId>
             <version>${dagger.version}</version>
             <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>com.jakewharton</groupId>
+            <artifactId>butterknife</artifactId>
+            <version>1.3.0</version>
         </dependency>
 
         <dependency>
@@ -168,20 +161,24 @@
 
     </dependencies>
     <build>
+        <finalName>transittamer-${project.version}</finalName>
         <plugins>
+
             <plugin>
                 <groupId>com.jayway.maven.plugins.android.generation2</groupId>
                 <artifactId>android-maven-plugin</artifactId>
-                <version>3.5.0</version>
+                <version>3.5.1</version>
                 <extensions>true</extensions>
                 <configuration>
                     <sdk>
                         <platform>16</platform>
                     </sdk>
-                    <undeployBeforeDeploy>true</undeployBeforeDeploy>
+                    <undeployBeforeDeploy>false</undeployBeforeDeploy>
+                    <renameManifestPackage>org.nsdev.apps.transittamer2</renameManifestPackage>
                 </configuration>
 
             </plugin>
+
             <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.0</version>
@@ -191,7 +188,7 @@
                 </configuration>
                 <dependencies>
                     <dependency>
-                        <groupId>com.squareup</groupId>
+                        <groupId>com.squareup.dagger</groupId>
                         <artifactId>dagger-compiler</artifactId>
                         <version>${dagger.version}</version>
                     </dependency>
@@ -262,6 +259,7 @@
                             <manifest>
                                 <debuggable>false</debuggable>
                             </manifest>
+                            <renameManifestPackage>org.nsdev.apps.transittamer</renameManifestPackage>
                         </configuration>
                         <executions>
                             <execution>
@@ -277,4 +275,18 @@
             </build>
         </profile>
     </profiles>
+
+    <repositories>
+        <repository>
+            <id>sonatype-nexus-snapshots</id>
+            <name>Sonatype Nexus Snapshots</name>
+            <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+            <releases>
+                <enabled>false</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
 </project>

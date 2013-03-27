@@ -41,7 +41,7 @@
 
     <modules>
         <module>app</module>
-        <module>integration-tests</module>
+        <!--  <module>integration-tests</module>          -->
     </modules>
 
     <properties>
@@ -51,6 +51,7 @@
     <build>
         <pluginManagement>
             <plugins>
+                <!--
                 <plugin>
                     <groupId>com.jayway.maven.plugins.android.generation2</groupId>
                     <artifactId>android-maven-plugin</artifactId>
@@ -60,13 +61,14 @@
                         <sdk>
                             <platform>16</platform>
                         </sdk>
-                        <!--<undeployBeforeDeploy>true</undeployBeforeDeploy>-->
                         <proguard>
                             <skip>false</skip>
                             <config>../proguard.cfg</config>
                         </proguard>
+                        <renameManifestPackage>org.nsdev.apps.transittamer2</renameManifestPackage>
                     </configuration>
                 </plugin>
+   -->
             </plugins>
         </pluginManagement>
     </build>
