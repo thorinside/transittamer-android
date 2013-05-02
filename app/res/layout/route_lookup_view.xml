@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+    <EditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/edittext_route_number"
+            android:hint="@string/route_number_hint"
+            android:enabled="true"
+            android:editable="true"
+            android:phoneNumber="false"
+            android:inputType="textNoSuggestions|number"
+            android:layout_alignParentLeft="true"
+            android:layout_marginLeft="48dp"
+            android:layout_alignParentTop="true"
+            android:layout_marginTop="24dp"
+            android:layout_marginRight="48dp"
+            android:textColor="@android:color/black"/>
+
+    <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/btn_find"
+            android:id="@+id/button_find"
+            android:layout_alignRight="@+id/edittext_route_number"
+            android:layout_below="@+id/edittext_route_number"
+            android:layout_marginTop="24dp"/>
+</RelativeLayout>

@@ -1,12 +1,8 @@
 package org.nsdev.apps.transittamer.ui;
 
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.List;
-import java.util.concurrent.CountDownLatch;
-
 import android.content.Context;
+import android.text.Html;
+import android.text.Spanned;
 import android.util.Log;
 import com.littlefluffytoys.littlefluffylocationlibrary.LocationInfo;
 import org.nsdev.apps.transittamer.R;
@@ -14,10 +10,16 @@ import org.nsdev.apps.transittamer.service.*;
 import retrofit.http.Callback;
 import retrofit.http.RetrofitError;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.List;
+import java.util.concurrent.CountDownLatch;
+
 public class NearestRouteStopInfo
 {
     private final Context context;
-    private static final int NUMBER_OF_TIMES = 3;
+    private static final int NUMBER_OF_TIMES = 2;
     private static final String TAG = "NearestRouteStopInfo";
     Stop stop;
     String routeShortName;
@@ -26,25 +28,26 @@ public class NearestRouteStopInfo
     long nextBusTime;
     transient TransitTamerServiceAsync service;
     transient LocationService locationService;
-    transient DataUpdatedCallback callback;
     transient CountDownLatch loadComplete = new CountDownLatch(1);
 
-    public NearestRouteStopInfo(Context context, String routeShortName, TransitTamerServiceAsync service, LocationService locationService, DataUpdatedCallback callback) throws InterruptedException {
+    public NearestRouteStopInfo(Context context, String routeShortName, TransitTamerServiceAsync service, LocationService locationService) throws InterruptedException
+    {
         this.context = context;
         this.routeShortName = routeShortName;
         localizedDateFormat = android.text.format.DateFormat.getTimeFormat(this.context.getApplicationContext());
         this.service = service;
         this.locationService = locationService;
-        this.callback = callback;
         findRoute(routeShortName);
         loadComplete.await();
     }
 
     private void findRoute(final String routeName)
     {
-        service.getRoutesForShortName(routeName, new Callback<RoutesResponse>() {
+        service.getRoutesForShortName(routeName, new Callback<RoutesResponse>()
+        {
             @Override
-            public void success(RoutesResponse routesResponse) {
+            public void success(RoutesResponse routesResponse)
+            {
                 Log.e(TAG, "Got routes: " + routesResponse.routes);
                 routes = routesResponse.routes;
 
@@ -52,7 +55,8 @@ public class NearestRouteStopInfo
             }
 
             @Override
-            public void failure(RetrofitError retrofitError) {
+            public void failure(RetrofitError retrofitError)
+            {
                 loadComplete.countDown();
             }
         });
@@ -77,7 +81,7 @@ public class NearestRouteStopInfo
         return stop.stopName;
     }
 
-    public String getSchedule()
+    public Spanned getSchedule()
     {
         if (schedules == null)
             return null;
@@ -95,29 +99,36 @@ public class NearestRouteStopInfo
         final float longitude = location.lastLong;
         final float latitude = location.lastLat;
 
-        Log.e(TAG, "U are at "+latitude+","+longitude);
+        Log.e(TAG, "U are at " + latitude + "," + longitude);
 
         if (routes != null)
         {
-            for (final Route route : routes) {
+            for (final Route route : routes)
+            {
 
-                Log.e(TAG, "Finding nearest stop for route "+route.routeId+" lon="+longitude+" lat="+latitude);
+                Log.e(TAG, "Finding nearest stop for route " + route.routeId + " lon=" + longitude + " lat=" + latitude);
 
 
-                service.getNearestStopForRoute(route.routeId, longitude, latitude, new Callback<StopResponse>() {
+                service.getNearestStopForRoute(route.routeId, longitude, latitude, new Callback<StopResponse>()
+                {
                     @Override
-                    public void success(StopResponse stopResponse) {
-                        if (stopResponse.stop != null) {
+                    public void success(StopResponse stopResponse)
+                    {
+                        if (stopResponse.stop != null)
+                        {
                             stop = stopResponse.stop;
                             Log.e(TAG, "Found stop for route: " + route.routeId + " Stop=" + stop.stopCode);
                             loadSchedule(route);
-                        } else {
+                        }
+                        else
+                        {
                             Log.e(TAG, "StopResponse.stop is null");
                         }
                     }
 
                     @Override
-                    public void failure(RetrofitError retrofitError) {
+                    public void failure(RetrofitError retrofitError)
+                    {
                         Log.e(TAG, "Error for URL " + retrofitError.getUrl());
                         Log.e(TAG, "Exception", retrofitError.getException());
                         loadComplete.countDown();
@@ -132,16 +143,18 @@ public class NearestRouteStopInfo
 
     private void loadSchedule(final Route route)
     {
-        service.getSchedule(stop.stopCode, route.routeId, new Callback<ScheduleResponse>() {
+        service.getSchedule(stop.stopCode, route.routeId, new Callback<ScheduleResponse>()
+        {
             @Override
-            public void success(ScheduleResponse scheduleResponse) {
+            public void success(ScheduleResponse scheduleResponse)
+            {
                 schedules = scheduleResponse.times;
-                callback.dataUpdated();
                 loadComplete.countDown();
             }
 
             @Override
-            public void failure(RetrofitError retrofitError) {
+            public void failure(RetrofitError retrofitError)
+            {
                 loadComplete.countDown();
             }
         });
@@ -151,7 +164,7 @@ public class NearestRouteStopInfo
     SimpleDateFormat dayFormat = new SimpleDateFormat("yyyy-MM-dd");
     java.text.DateFormat localizedDateFormat;
 
-    public String processSchedules()
+    public Spanned processSchedules()
     {
         Date now = new Date();
 
@@ -164,7 +177,7 @@ public class NearestRouteStopInfo
         if (schedules != null)
         {
 
-            for (Schedule schedule: schedules)
+            for (Schedule schedule : schedules)
             {
                 String timeStr = schedule.departureTime;
                 Date date = null;
@@ -196,7 +209,9 @@ public class NearestRouteStopInfo
                         sb.append("  \u00BB  ");
                         nextBusTime = date.getTime();
                     }
+                    sb.append(String.format("<a href=\"schedulelink://schedule?trip=%s\">", schedule.tripId));
                     sb.append(timeStr);
+                    sb.append("</a>");
                 }
             }
         }
@@ -212,7 +227,7 @@ public class NearestRouteStopInfo
             sb.append(context.getString(R.string.data_error));
         }
 
-        return sb.toString();
+        return Html.fromHtml(sb.toString());
     }
 
 }

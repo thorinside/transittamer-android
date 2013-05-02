@@ -1,32 +1,40 @@
 package org.nsdev.apps.transittamer.ui;
 
+import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
+import android.widget.TextView;
 import com.github.kevinsawicki.wishlist.SingleTypeAdapter;
 import org.nsdev.apps.transittamer.R;
 
 import java.util.List;
 
-public class NearestRouteStopAdapter extends SingleTypeAdapter<NearestRouteStopInfo> {
-    public NearestRouteStopAdapter(LayoutInflater inflater, int layoutResourceId, List<NearestRouteStopInfo> items) {
+public class NearestRouteStopAdapter extends SingleTypeAdapter<NearestRouteStopInfo>
+{
+    public NearestRouteStopAdapter(LayoutInflater inflater, int layoutResourceId, List<NearestRouteStopInfo> items)
+    {
         super(inflater, layoutResourceId);
         setItems(items);
     }
 
     @Override
-    protected int[] getChildViewIds() {
+    protected int[] getChildViewIds()
+    {
         return new int[]{R.id.busRouteText, R.id.stopNameText, R.id.scheduleText, R.id.stopCodeText};
     }
 
     @Override
-    protected void update(int position, NearestRouteStopInfo item) {
+    protected void update(int position, NearestRouteStopInfo item)
+    {
         setText(R.id.busRouteText, item.getRouteNumber());
         setText(R.id.stopCodeText, item.getStopCode());
         setText(R.id.scheduleText, item.getSchedule());
+        getView(R.id.scheduleText, TextView.class).setMovementMethod(LinkMovementMethod.getInstance());
         setText(R.id.stopNameText, item.getStopName());
     }
 
     @Override
-    public void notifyDataSetChanged() {
+    public void notifyDataSetChanged()
+    {
         super.notifyDataSetChanged();
     }
 }

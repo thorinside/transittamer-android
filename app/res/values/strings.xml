@@ -41,6 +41,10 @@
     <string name="show_my_location">Show My Location</string>
     <string name="menu_search">Search</string>
     <string name="search_query_hint_bus_number">Route Number</string>
+    <string name="menu_signup">Sign Up</string>
+    <string name="btn_find">Find</string>
+    <string name="route_number_hint">Route Number</string>
+    <string name="page_route_lookup">Find Route</string>
 
 
 </resources>

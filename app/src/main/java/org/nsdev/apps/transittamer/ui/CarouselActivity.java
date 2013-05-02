@@ -7,8 +7,10 @@ import android.content.IntentFilter;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;
-import butterknife.InjectView;
-import butterknife.Views;
+import android.util.Log;
+import android.view.ViewGroup;
+import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.actionbarsherlock.view.Window;
 import com.google.android.gms.maps.CameraUpdateFactory;
@@ -18,6 +20,9 @@ import com.google.android.gms.maps.UiSettings;
 import com.google.android.gms.maps.model.*;
 import com.littlefluffytoys.littlefluffylocationlibrary.LocationInfo;
 import com.littlefluffytoys.littlefluffylocationlibrary.LocationLibrary;
+import com.parse.ParseException;
+import com.parse.ParseUser;
+import com.parse.SignUpCallback;
 import com.squareup.otto.Bus;
 import com.squareup.otto.Subscribe;
 import com.viewpagerindicator.TitlePageIndicator;
@@ -38,12 +43,12 @@ import java.util.ArrayList;
 public class CarouselActivity extends SherlockFragmentActivity
 {
 
-    @InjectView(id.tpi_header)
     protected TitlePageIndicator indicator;
-    @InjectView(id.vp_pages)
     protected ViewPager pager;
+    protected FrameLayout layout;
 
     protected SupportMapFragment mapFragment;
+    protected boolean isMapExpanded;
 
     @Inject
     Bus bus;
@@ -53,7 +58,6 @@ public class CarouselActivity extends SherlockFragmentActivity
 
 
     private static final String TAG = "CarouselActivity";
-    private LocationInfo location;
     private Circle me;
     private ArrayList<Marker> stopMarkers = new ArrayList<Marker>();
     private ArrayList<Circle> stopCircles = new ArrayList<Circle>();
@@ -63,11 +67,10 @@ public class CarouselActivity extends SherlockFragmentActivity
         @Override
         public void onReceive(Context context, Intent intent)
         {
-            location = (LocationInfo) intent.getSerializableExtra("com.littlefluffytoys.littlefluffylocationlibrary.LocationInfo");
+            LocationInfo location = (LocationInfo) intent.getSerializableExtra("com.littlefluffytoys.littlefluffylocationlibrary.LocationInfo");
             bus.post(location);
         }
     };
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -80,7 +83,9 @@ public class CarouselActivity extends SherlockFragmentActivity
 
         BootstrapApplication.inject(this);
 
-        Views.inject(this);
+        indicator = (TitlePageIndicator) findViewById(id.tpi_header);
+        pager = (ViewPager) findViewById(id.vp_pages);
+        layout = (FrameLayout) findViewById(id.fl_map_layout);
 
         pager.setAdapter(new BootstrapPagerAdapter(getResources(), getSupportFragmentManager()));
 
@@ -107,6 +112,29 @@ public class CarouselActivity extends SherlockFragmentActivity
                 }
             });
 
+            map.setOnMapClickListener(new GoogleMap.OnMapClickListener()
+            {
+                @Override
+                public void onMapClick(LatLng latLng)
+                {
+                    if (!isMapExpanded)
+                    {
+                        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0);
+                        params.weight = 4.0f;
+                        layout.setLayoutParams(params);
+
+                    }
+                    else
+                    {
+                        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, 0);
+                        params.weight = 0.5f;
+                        layout.setLayoutParams(params);
+                    }
+
+                    isMapExpanded = !isMapExpanded;
+                }
+            });
+
             LocationInfo location = new LocationInfo(this.getBaseContext());
             map.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(location.lastLat, location.lastLong), 16));
         }
@@ -127,6 +155,7 @@ public class CarouselActivity extends SherlockFragmentActivity
     @Override
     protected void onResume()
     {
+        Log.e("TAG", "onResume called.");
         bus.register(this);
         getApplicationContext().registerReceiver(locationReceiver, new IntentFilter("org.nsdev.apps.transittamer.littlefluffylocationlibrary.LOCATION_CHANGED"));
         LocationLibrary.forceLocationUpdate(getBaseContext());
@@ -136,9 +165,42 @@ public class CarouselActivity extends SherlockFragmentActivity
     @Override
     protected void onPause()
     {
+        Log.e("TAG", "onPause called.");
+
         bus.unregister(this);
         getApplicationContext().unregisterReceiver(locationReceiver);
         super.onPause();
+    }
+
+    @Subscribe
+    public void onSignUpEvent(SignUpEvent event)
+    {
+        ParseUser user = ParseUser.getCurrentUser();
+        if (!user.isAuthenticated())
+        {
+            Log.e("TransitTamer", "User is not authenticated.");
+            user.setUsername("thorinside");
+            user.setPassword("1transittamerword!");
+            user.signUpInBackground(new SignUpCallback()
+            {
+                @Override
+                public void done(ParseException e)
+                {
+                    if (e != null) Log.e("TransitTamer", "Error in signup.", e);
+                    else Log.e("TransitTamer", "Sign Up Done.");
+                }
+            });
+        }
+        else
+        {
+            Log.e("TransitTamer", "User authenticated.");
+        }
+    }
+
+    @Subscribe
+    public void onScheduleLinkEvent(ScheduleLinkClickEvent event)
+    {
+        System.err.println("Got link click event.");
     }
 
     @Subscribe
@@ -149,13 +211,22 @@ public class CarouselActivity extends SherlockFragmentActivity
     }
 
     @Subscribe
+    public void onLocationEvent(LocationInfo event)
+    {
+        final GoogleMap map = mapFragment.getMap();
+        if (map != null)
+            map.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(event.lastLat, event.lastLong), 16));
+    }
+
+    @Subscribe
     public void onRouteStopClicked(RouteStopClickedEvent event)
     {
         final Stop stop = event.getStop();
         final Route route = event.getRoute();
 
         final GoogleMap map = mapFragment.getMap();
-        map.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(stop.loc.lat, stop.loc.lon), 16));
+        if (stop != null)
+            map.animateCamera(CameraUpdateFactory.newLatLngZoom(new LatLng(stop.loc.lat, stop.loc.lon), 16));
         map.clear();
         stopMarkers.clear();
         stopCircles.clear();
@@ -195,8 +266,7 @@ public class CarouselActivity extends SherlockFragmentActivity
             {
                 for (Stop s : stopsResponse.stops)
                 {
-
-                    if (s.stopCode.equals(stop.stopCode)) continue;
+                    if (stop != null && s.stopCode.equals(stop.stopCode)) continue;
 
                     LatLng stopPosition = new LatLng(s.loc.lat, s.loc.lon);
                     stopMarkers.add(
@@ -221,14 +291,16 @@ public class CarouselActivity extends SherlockFragmentActivity
 
                 }
 
-                map.addMarker(
-                        new MarkerOptions()
-                                .title(stop.stopCode)
-                                .snippet(stop.stopName)
-                                .position(new LatLng(stop.loc.lat, stop.loc.lon))
+                if (stop != null)
+                {
+                    map.addMarker(
+                            new MarkerOptions()
+                                    .title(stop.stopCode)
+                                    .snippet(stop.stopName)
+                                    .position(new LatLng(stop.loc.lat, stop.loc.lon))
 
-                );
-
+                    );
+                }
             }
 
             @Override

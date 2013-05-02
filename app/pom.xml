@@ -139,11 +139,6 @@
             <version>${dagger.version}</version>
             <scope>provided</scope>
         </dependency>
-        <dependency>
-            <groupId>com.jakewharton</groupId>
-            <artifactId>butterknife</artifactId>
-            <version>1.3.0</version>
-        </dependency>
 
         <dependency>
             <groupId>com.littlefluffytoys</groupId>
@@ -151,11 +146,23 @@
             <version>11</version>
         </dependency>
 
+        <dependency>
+            <groupId>com.parse</groupId>
+            <artifactId>parse</artifactId>
+            <version>1.2.3</version>
+        </dependency>
+        <dependency>
+            <groupId>com.parse</groupId>
+            <artifactId>parse</artifactId>
+            <version>1.2.3</version>
+            <classifier>javadoc</classifier>
+        </dependency>
+
         <!-- Make sure this is below the android dependencies -->
         <dependency>
-            <groupId>com.pivotallabs</groupId>
+            <groupId>org.robolectric</groupId>
             <artifactId>robolectric</artifactId>
-            <version>1.1</version>
+            <version>2.0-alpha-3-SNAPSHOT</version>
             <scope>test</scope>
         </dependency>
 
@@ -259,7 +266,7 @@
                             <manifest>
                                 <debuggable>false</debuggable>
                             </manifest>
-                            <renameManifestPackage>org.nsdev.apps.transittamer</renameManifestPackage>
+                            <renameManifestPackage>org.nsdev.apps.transittamer2</renameManifestPackage>
                         </configuration>
                         <executions>
                             <execution>
@@ -287,6 +294,10 @@
             <snapshots>
                 <enabled>true</enabled>
             </snapshots>
+        </repository>
+        <repository>
+            <id>ignition-snapshots</id>
+            <url>http://nexus.qype.com/content/repositories/snapshots</url>
         </repository>
     </repositories>
 </project>

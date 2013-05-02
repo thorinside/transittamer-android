@@ -60,7 +60,19 @@
             </intent-filter>
         </activity>
 
+        <activity android:name=".ui.ScheduleLinkClickActivity">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW"/>
 
+                <category android:name="android.intent.category.DEFAULT"/>
+                <category android:name="android.intent.category.BROWSABLE"/>
+
+                <data android:scheme="schedulelink"/>
+            </intent-filter>
+        </activity>
+
+
+        <!--
         <service android:name="com.littlefluffytoys.littlefluffylocationlibrary.LocationBroadcastService"/>
 
         <receiver
@@ -73,7 +85,7 @@
         <receiver
                 android:name="com.littlefluffytoys.littlefluffylocationlibrary.PassiveLocationChangedReceiver"
                 android:exported="true"/>
-
+        -->
         <meta-data
                 android:name="com.google.android.maps.v2.API_KEY"
                 android:value="AIzaSyDZvPmcYDzgs0RlspoNv4gDkwznH62XLwE"/>

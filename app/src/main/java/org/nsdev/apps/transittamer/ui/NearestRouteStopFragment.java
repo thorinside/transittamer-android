@@ -14,6 +14,7 @@ import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
 import com.github.kevinsawicki.wishlist.SingleTypeAdapter;
 import com.littlefluffytoys.littlefluffylocationlibrary.LocationInfo;
+import com.parse.*;
 import com.squareup.otto.Bus;
 import com.squareup.otto.Subscribe;
 import org.nsdev.apps.transittamer.BootstrapApplication;
@@ -27,7 +28,7 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-public class NearestRouteStopFragment extends ItemListFragment<NearestRouteStopInfo> implements DataUpdatedCallback, LocationService
+public class NearestRouteStopFragment extends ItemListFragment<NearestRouteStopInfo> implements LocationService
 {
 
     @Inject
@@ -77,8 +78,41 @@ public class NearestRouteStopFragment extends ItemListFragment<NearestRouteStopI
             @Override
             public boolean onQueryTextSubmit(String s)
             {
-                queryText = s;
-                refreshWithProgress();
+                final ParseObject route = new ParseObject("route");
+                route.put("routeNumber", s);
+                route.put("user", ParseUser.getCurrentUser());
+
+                ParseQuery query = new ParseQuery("route");
+                query.whereEqualTo("routeNumber", s);
+                query.whereEqualTo("user", ParseUser.getCurrentUser());
+                query.countInBackground(new CountCallback()
+                {
+                    @Override
+                    public void done(int count, ParseException e)
+                    {
+                        if (count == 0)
+                        {
+                            route.saveInBackground(new SaveCallback()
+                            {
+                                @Override
+                                public void done(ParseException e)
+                                {
+                                    if (e != null)
+                                    {
+                                        Log.e("TransitTamer", "Error saving", e);
+                                        return;
+                                    }
+                                    refreshWithProgress();
+                                }
+                            });
+                        }
+                        else
+                        {
+                            refreshWithProgress();
+                        }
+                    }
+                });
+
                 return true;
             }
 
@@ -99,6 +133,11 @@ public class NearestRouteStopFragment extends ItemListFragment<NearestRouteStopI
             bus.post(new ToggleLocationEvent());
             return true;
         }
+        else if (item.getItemId() == R.id.menu_signup)
+        {
+            bus.post(new SignUpEvent());
+            return true;
+        }
         else
         {
             return super.onOptionsItemSelected(item);
@@ -115,15 +154,16 @@ public class NearestRouteStopFragment extends ItemListFragment<NearestRouteStopI
             @Override
             public List<NearestRouteStopInfo> loadData() throws Exception
             {
-
                 ArrayList<NearestRouteStopInfo> items = new ArrayList<NearestRouteStopInfo>();
 
-                if (queryText != null)
+                TransitTamerServiceAsync service = transitServiceProvider.get();
+
+                ParseQuery query = new ParseQuery("route");
+                query.whereEqualTo("user", ParseUser.getCurrentUser());
+                query.setCachePolicy(ParseQuery.CachePolicy.NETWORK_ELSE_CACHE);
+                for (ParseObject route : query.find())
                 {
-
-                    TransitTamerServiceAsync service = transitServiceProvider.get();
-
-                    items.add(new NearestRouteStopInfo(getContext(), queryText, service, NearestRouteStopFragment.this, NearestRouteStopFragment.this));
+                    items.add(new NearestRouteStopInfo(getContext(), route.getString("routeNumber"), service, NearestRouteStopFragment.this));
                 }
 
                 return items;
@@ -206,12 +246,6 @@ public class NearestRouteStopFragment extends ItemListFragment<NearestRouteStopI
             }
         });
 
-    }
-
-    @Override
-    public void dataUpdated()
-    {
-        Log.e(TAG, "dataUpdated()");
     }
 
     @Override

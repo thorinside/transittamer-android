@@ -10,7 +10,8 @@ import org.nsdev.apps.transittamer.R;
 /**
  * Pager adapter
  */
-public class BootstrapPagerAdapter extends FragmentPagerAdapter {
+public class BootstrapPagerAdapter extends FragmentPagerAdapter
+{
 
     private final Resources resources;
 
@@ -20,33 +21,45 @@ public class BootstrapPagerAdapter extends FragmentPagerAdapter {
      * @param resources
      * @param fragmentManager
      */
-    public BootstrapPagerAdapter(Resources resources, FragmentManager fragmentManager) {
+    public BootstrapPagerAdapter(Resources resources, FragmentManager fragmentManager)
+    {
         super(fragmentManager);
         this.resources = resources;
     }
 
     @Override
-    public int getCount() {
-        return 1;
+    public int getCount()
+    {
+        return 2;
     }
 
     @Override
-    public Fragment getItem(int position) {
+    public Fragment getItem(int position)
+    {
         Bundle bundle = new Bundle();
-        switch (position) {
+        switch (position)
+        {
             case 0:
-                NearestRouteStopFragment fragment = new NearestRouteStopFragment();
-                fragment.setArguments(bundle);
-                return fragment;
+                RouteLookupFragment routeLookupFragment = new RouteLookupFragment();
+                routeLookupFragment.setArguments(bundle);
+                return routeLookupFragment;
+            case 1:
+                NearestRouteStopFragment nearestRouteStopFragment = new NearestRouteStopFragment();
+                nearestRouteStopFragment.setArguments(bundle);
+                return nearestRouteStopFragment;
             default:
                 return null;
         }
     }
 
     @Override
-    public CharSequence getPageTitle(int position) {
-        switch (position) {
+    public CharSequence getPageTitle(int position)
+    {
+        switch (position)
+        {
             case 0:
+                return resources.getString(R.string.page_route_lookup);
+            case 1:
                 return resources.getString(R.string.page_nearest_route_stops);
             default:
                 return null;

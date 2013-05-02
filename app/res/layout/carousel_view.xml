@@ -3,6 +3,8 @@
               xmlns:app="http://schemas.android.com/apk/res/org.nsdev.apps.transittamer"
               android:layout_width="match_parent"
               android:layout_height="match_parent"
+              android:animateLayoutChanges="true"
+              android:id="@+id/ll_carousel_layout"
               android:background="@color/pager_background"
               android:orientation="vertical">
 
@@ -25,7 +27,7 @@
             android:id="@+id/vp_pages"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="1"
+            android:layout_weight="2"
             />
 
     <View
@@ -35,11 +37,18 @@
             android:background="#000"
             />
 
-    <fragment
-            android:name="com.google.android.gms.maps.SupportMapFragment"
-            android:id="@+id/smf_map"
+    <FrameLayout
+            android:id="@+id/fl_map_layout"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_weight="1.5"/>
+            android:layout_weight="0.5">
+
+        <fragment
+                android:name="com.google.android.gms.maps.SupportMapFragment"
+                android:id="@+id/smf_map"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                />
+    </FrameLayout>
 
 </LinearLayout>
