@@ -17,6 +17,7 @@ import org.nsdev.apps.transittamer.service.Route;
 import org.nsdev.apps.transittamer.service.RoutesResponse;
 import retrofit.http.Callback;
 import retrofit.http.RetrofitError;
+import retrofit.http.client.Response;
 
 import javax.inject.Inject;
 
@@ -48,7 +49,7 @@ public class RouteLookupFragment extends SherlockFragment
                 serviceProvider.get().getRoutesForShortName(text.getText().toString(), new Callback<RoutesResponse>()
                 {
                     @Override
-                    public void success(RoutesResponse routesResponse)
+                    public void success(RoutesResponse routesResponse, Response response)
                     {
                         bus.post(routesResponse);
                     }

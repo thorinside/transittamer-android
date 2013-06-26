@@ -2,7 +2,6 @@ package org.nsdev.apps.transittamer;
 
 import android.app.Application;
 import android.content.Context;
-import com.littlefluffytoys.littlefluffylocationlibrary.LocationLibrary;
 import com.parse.Parse;
 import com.parse.ParseACL;
 import com.parse.ParseTwitterUtils;
@@ -31,10 +30,6 @@ public class BootstrapApplication extends Application
         super.onCreate();
 
         objectGraph = ObjectGraph.create(new ApplicationModule(this));
-
-        LocationLibrary.initialiseLibrary(getBaseContext(), true, "org.nsdev.apps.transittamer");
-        LocationLibrary.showDebugOutput(true);
-        LocationLibrary.forceLocationUpdate(getBaseContext());
 
         // Add your initialization code here
         Parse.initialize(this, "JfNTwe2XXLjmZNp6LAGK8A66PvZ9qTAEtKMDiYAH", "nuKWdQDxl17T4IqVWSzqPZLRjOGWGPFrPdePsrlq");

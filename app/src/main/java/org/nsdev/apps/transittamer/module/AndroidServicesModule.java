@@ -12,6 +12,7 @@ import javax.inject.Singleton;
 @Module(complete = false)
 public class AndroidServicesModule {
 
+    /*
     @Provides
     @Singleton
     LocationManager provideLocationManager(Context context) {
@@ -29,5 +30,6 @@ public class AndroidServicesModule {
     Resources provideResources(Context context) {
         return context.getResources();
     }
+    */
 
 }

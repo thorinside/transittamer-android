@@ -13,7 +13,6 @@ import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
 import com.github.kevinsawicki.wishlist.SingleTypeAdapter;
-import com.littlefluffytoys.littlefluffylocationlibrary.LocationInfo;
 import com.parse.*;
 import com.squareup.otto.Bus;
 import com.squareup.otto.Subscribe;
@@ -36,10 +35,11 @@ public class NearestRouteStopFragment extends ItemListFragment<NearestRouteStopI
     @Inject
     Bus bus;
 
-    private LocationInfo location;
+    private Location location;
     private String queryText = null;
 
     private static final String TAG = "NearestRouteStopFragment";
+    private ArrayList<String> routes = new ArrayList<String>();
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState)
@@ -78,6 +78,9 @@ public class NearestRouteStopFragment extends ItemListFragment<NearestRouteStopI
             @Override
             public boolean onQueryTextSubmit(String s)
             {
+                routes.add(s);
+                refreshWithProgress();
+                /*
                 final ParseObject route = new ParseObject("route");
                 route.put("routeNumber", s);
                 route.put("user", ParseUser.getCurrentUser());
@@ -112,6 +115,7 @@ public class NearestRouteStopFragment extends ItemListFragment<NearestRouteStopI
                         }
                     }
                 });
+                */
 
                 return true;
             }
@@ -158,12 +162,9 @@ public class NearestRouteStopFragment extends ItemListFragment<NearestRouteStopI
 
                 TransitTamerServiceAsync service = transitServiceProvider.get();
 
-                ParseQuery query = new ParseQuery("route");
-                query.whereEqualTo("user", ParseUser.getCurrentUser());
-                query.setCachePolicy(ParseQuery.CachePolicy.NETWORK_ELSE_CACHE);
-                for (ParseObject route : query.find())
+                for (String route : routes)
                 {
-                    items.add(new NearestRouteStopInfo(getContext(), route.getString("routeNumber"), service, NearestRouteStopFragment.this));
+                    items.add(new NearestRouteStopInfo(getContext(), route, service, NearestRouteStopFragment.this));
                 }
 
                 return items;
@@ -222,8 +223,8 @@ public class NearestRouteStopFragment extends ItemListFragment<NearestRouteStopI
                 l2.setLongitude(rhs.stop.loc.lon);
 
                 Location me = new Location("internal");
-                me.setLatitude(location.lastLat);
-                me.setLongitude(location.lastLong);
+                me.setLatitude(location.getLatitude());
+                me.setLongitude(location.getLongitude());
 
                 double distl1 = me.distanceTo(l1);
                 double distl2 = me.distanceTo(l2);
@@ -249,13 +250,8 @@ public class NearestRouteStopFragment extends ItemListFragment<NearestRouteStopI
     }
 
     @Override
-    public LocationInfo getLocation()
+    public android.location.Location getLocation()
     {
-        Log.e(TAG, "getLocation()");
-        if (getActivity() != null)
-        {
-            location = new LocationInfo(getActivity().getBaseContext());
-        }
         return location;
     }
 
@@ -274,7 +270,7 @@ public class NearestRouteStopFragment extends ItemListFragment<NearestRouteStopI
     }
 
     @Subscribe
-    public void onLocationUpdated(LocationInfo location)
+    public void onLocationUpdated(Location location)
     {
         Log.e("LOCATION", location.toString());
         this.location = location;

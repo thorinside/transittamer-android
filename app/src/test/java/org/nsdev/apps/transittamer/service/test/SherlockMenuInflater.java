@@ -5,7 +5,7 @@ import android.util.AttributeSet;
 import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.SubMenu;
-import org.robolectric.internal.Implementation;
+import org.robolectric.annotation.Implementation;
 import org.robolectric.res.MenuNode;
 import org.robolectric.res.ResName;
 import org.robolectric.res.ResourceLoader;

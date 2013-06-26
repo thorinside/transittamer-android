@@ -4,7 +4,7 @@ import com.google.gson.FieldNamingPolicy;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import org.nsdev.apps.transittamer.service.TransitTamerServiceAsync;
-import retrofit.android.AndroidApacheClient;
+import retrofit.http.android.AndroidApacheClient;
 import retrofit.http.GsonConverter;
 import retrofit.http.RestAdapter;
 import retrofit.http.Server;
@@ -36,7 +36,8 @@ public class TransitTamerServiceProvider implements Provider<TransitTamerService
     public TransitTamerServiceAsync get() {
         if (restAdapter == null) {
             restAdapter = new RestAdapter.Builder()
-                    .setServer(new Server("http://nosuchdevice.nsdev.org:10240"))
+                     .setServer(new Server("http://nosuchdevice.nsdev.org:10240"))
+                    //.setServer(new Server("http://192.168.0.10:10240"))
                     .setClient(new AndroidApacheClient())
                     .setConverter(new GsonConverter(GSON))
                     .build();

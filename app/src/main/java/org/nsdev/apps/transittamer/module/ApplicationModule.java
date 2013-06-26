@@ -13,7 +13,7 @@ import org.nsdev.apps.transittamer.ui.ScheduleLinkClickActivity;
 import javax.inject.Singleton;
 
 @Module(
-        entryPoints = {
+        injects = {
                 BootstrapApplication.class,
                 ScheduleLinkClickActivity.class,
                 CarouselActivity.class,
@@ -31,12 +31,14 @@ public class ApplicationModule
         this.context = context.getApplicationContext();
     }
 
+    /*
     @Provides
     @Singleton
     Context provideContext()
     {
         return context;
     }
+    */
 
     @Provides
     @Singleton

@@ -1,14 +1,15 @@
 package org.nsdev.apps.transittamer.ui;
 
 import android.content.Context;
+import android.location.Location;
 import android.text.Html;
 import android.text.Spanned;
 import android.util.Log;
-import com.littlefluffytoys.littlefluffylocationlibrary.LocationInfo;
 import org.nsdev.apps.transittamer.R;
 import org.nsdev.apps.transittamer.service.*;
 import retrofit.http.Callback;
 import retrofit.http.RetrofitError;
+import retrofit.http.client.Response;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -43,10 +44,12 @@ public class NearestRouteStopInfo
 
     private void findRoute(final String routeName)
     {
+        Log.e("NAS", "Finding routed: " + routeName);
         service.getRoutesForShortName(routeName, new Callback<RoutesResponse>()
         {
+
             @Override
-            public void success(RoutesResponse routesResponse)
+            public void success(RoutesResponse routesResponse, Response response)
             {
                 Log.e(TAG, "Got routes: " + routesResponse.routes);
                 routes = routesResponse.routes;
@@ -57,6 +60,7 @@ public class NearestRouteStopInfo
             @Override
             public void failure(RetrofitError retrofitError)
             {
+                Log.e("NAS", "Failed: ", retrofitError);
                 loadComplete.countDown();
             }
         });
@@ -95,9 +99,16 @@ public class NearestRouteStopInfo
 
     public void updateNearestStop()
     {
-        LocationInfo location = locationService.getLocation();
-        final float longitude = location.lastLong;
-        final float latitude = location.lastLat;
+        Log.e("NAS", "updateNearestStop()");
+
+        Location location = locationService.getLocation();
+        if (location == null) {
+            Log.e("NAS", "Location NULL");
+            return;
+        }
+
+        final double longitude = location.getLongitude();
+        final double latitude = location.getLatitude();
 
         Log.e(TAG, "U are at " + latitude + "," + longitude);
 
@@ -112,7 +123,7 @@ public class NearestRouteStopInfo
                 service.getNearestStopForRoute(route.routeId, longitude, latitude, new Callback<StopResponse>()
                 {
                     @Override
-                    public void success(StopResponse stopResponse)
+                    public void success(StopResponse stopResponse, Response response)
                     {
                         if (stopResponse.stop != null)
                         {
@@ -130,7 +141,7 @@ public class NearestRouteStopInfo
                     public void failure(RetrofitError retrofitError)
                     {
                         Log.e(TAG, "Error for URL " + retrofitError.getUrl());
-                        Log.e(TAG, "Exception", retrofitError.getException());
+                        Log.e(TAG, "Exception", retrofitError);
                         loadComplete.countDown();
                     }
                 });
@@ -146,7 +157,7 @@ public class NearestRouteStopInfo
         service.getSchedule(stop.stopCode, route.routeId, new Callback<ScheduleResponse>()
         {
             @Override
-            public void success(ScheduleResponse scheduleResponse)
+            public void success(ScheduleResponse scheduleResponse, Response response)
             {
                 schedules = scheduleResponse.times;
                 loadComplete.countDown();
