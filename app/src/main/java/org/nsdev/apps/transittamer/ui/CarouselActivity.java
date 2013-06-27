@@ -29,12 +29,16 @@ import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.UiSettings;
 import com.google.android.gms.maps.model.*;
 import com.google.android.gms.plus.PlusClient;
+import com.google.api.client.extensions.android.json.AndroidJsonFactory;
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
-import com.google.api.client.http.HttpTransport;
+import com.google.api.client.http.*;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
-import com.google.api.client.json.gson.GsonFactory;
+import com.google.api.client.util.IOUtils;
 import com.google.api.services.drive.Drive;
+import com.google.api.services.drive.model.File;
+import com.google.api.services.drive.model.FileList;
+import com.google.api.services.drive.model.ParentReference;
 import com.squareup.otto.Bus;
 import com.squareup.otto.Subscribe;
 import com.viewpagerindicator.TitlePageIndicator;
@@ -49,8 +53,13 @@ import retrofit.http.RetrofitError;
 import retrofit.http.client.Response;
 
 import javax.inject.Inject;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Activity to view the carousel and view pager indicator with fragments.
@@ -103,7 +112,36 @@ public class CarouselActivity extends SherlockFragmentActivity
             @Override
             public void onConnected(Bundle bundle)
             {
+                Log.e(TAG, "onConnected");
+
                 final String accountName = mPlusClient.getAccountName();
+
+                if (accountName == null)
+                {
+                    Log.e(TAG, "I am not sure how this is happening.");
+                    Log.e(TAG, "isConnected = " + mPlusClient.isConnected());
+                    Log.e(TAG, "isConnecting = " + mPlusClient.isConnecting());
+
+                    mPlusClient.revokeAccessAndDisconnect(new PlusClient.OnAccessRevokedListener()
+                    {
+                        @Override
+                        public void onAccessRevoked(ConnectionResult connectionResult)
+                        {
+                            mConnectionResult = connectionResult;
+                            Log.e(TAG, "Connection Result after revoke: " + mConnectionResult);
+                            try
+                            {
+                                connectionResult.startResolutionForResult(CarouselActivity.this, CONNECTION_FAILURE_RESOLUTION_REQUEST);
+                            }
+                            catch (IntentSender.SendIntentException e)
+                            {
+                                e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
+                            }
+                        }
+                    });
+                    return;
+                }
+
                 Toast.makeText(CarouselActivity.this, accountName + " is connected.", Toast.LENGTH_LONG).show();
 
                 AsyncTask<Void,Void,Void> task = new AsyncTask<Void, Void, Void>()
@@ -112,7 +150,7 @@ public class CarouselActivity extends SherlockFragmentActivity
                     protected Void doInBackground(Void... voids)
                     {
                         HttpTransport httpTransport = new NetHttpTransport();
-                        JsonFactory jsonFactory = new GsonFactory();
+                        JsonFactory jsonFactory = new AndroidJsonFactory();
 
                         Bundle appActivities = new Bundle();
                         appActivities.putString(GoogleAuthUtil.KEY_REQUEST_VISIBLE_ACTIVITIES,
@@ -146,16 +184,63 @@ public class CarouselActivity extends SherlockFragmentActivity
                         GoogleCredential credential = new GoogleCredential().setAccessToken(token);
 
                         //Create a new authorized API client
-                        Drive service = new Drive.Builder(httpTransport, jsonFactory, credential).build();
-
-                        com.google.api.client.util.Lists;
+                        Drive service = new Drive.Builder(httpTransport, jsonFactory, credential)
+                                .setApplicationName("TransitTamer")
+                                .build();
 
                         try
                         {
-                            service.files().touch("config.json");
-                            service.files().list();
+                            File file = service.files().get("appdata").execute();
+
+                            Log.d(TAG, "Id: " + file.getId());
+                            Log.d(TAG, "Title: " + file.getTitle());
+
+
+                            /*
+                            List<File> files = listFilesInApplicationDataFolder(service);
+
+                            for(File f : files)
+                            {
+                                Log.d(TAG, "Id: " + f.getId());
+                                Log.d(TAG, "Title: " + f.getTitle());
+
+                                service.files().delete(f.getId()).execute();
+                            }
+                            */
+
+                            File configFile = getConfigurationFile(service);
+                            if (configFile == null)
+                            {
+                                // Create default config
+                                Log.d(TAG, "Creating default configuration.");
+
+                                File body = new File();
+                                body.setId("config.json");
+                                body.setTitle("config.json");
+                                body.setDescription("TransitTamer configuration.");
+                                body.setMimeType("application/json");
+                                body.setParents(Arrays.asList(new ParentReference().setId("appdata")));
+
+                                InputStreamContent content = new InputStreamContent("application/json", new ByteArrayInputStream("{}".getBytes()));
+
+                                configFile = service.files().insert(body, content).execute();
+
+                                Log.d(TAG, "Id: " + configFile.getId());
+                                Log.d(TAG, "Title: " + configFile.getTitle());
+                            }
+                            else
+                            {
+                                Log.d(TAG, "ConfigFile: " + configFile);
+                                InputStream content = downloadFile(service, configFile);
+                                ByteArrayOutputStream out = new ByteArrayOutputStream();
+                                IOUtils.copy(content, out);
+
+                                String json = new String(out.toByteArray());
+                                Log.d(TAG, "Got config JSON: "+ json);
+                            }
+
                         } catch (IOException ex) {
-                            Log.e(TAG, "Unable to write", ex);
+                            Log.e(TAG, "Problems accessing Drive SDK", ex);
                         }
                         return null;
                     }
@@ -170,8 +255,30 @@ public class CarouselActivity extends SherlockFragmentActivity
             {
                 Log.d(TAG, "disconnected");
             }
-        }, this).setVisibleActivities("http://schemas.google.com/AddActivity", "http://schemas.google.com/BuyActivity")
-                .setScopes()
+        }, new GooglePlayServicesClient.OnConnectionFailedListener()
+        {
+            @Override
+            public void onConnectionFailed(ConnectionResult connectionResult)
+            {
+                Log.e(TAG, "CONNECTION FAILED: " + connectionResult);
+                mConnectionResult = connectionResult;
+
+                if (connectionResult.hasResolution())
+                {
+                    try
+                    {
+                        connectionResult.startResolutionForResult(CarouselActivity.this, CONNECTION_FAILURE_RESOLUTION_REQUEST);
+                    }
+                    catch (IntentSender.SendIntentException e)
+                    {
+                        // Try again
+                        mPlusClient.connect();
+                    }
+                }
+
+            }
+        }).setVisibleActivities("http://schemas.google.com/AddActivity", "http://schemas.google.com/BuyActivity")
+                .setScopes(scopes)
                 .build();
 
         // Progress bar to be displayed if the connection failure is not resolved.
@@ -241,6 +348,89 @@ public class CarouselActivity extends SherlockFragmentActivity
         }
     }
 
+    /**
+     * List all files contained in the Application Data folder.
+     *
+     * @param service Drive API service instance.
+     * @return List of File resources.
+     */
+    private static List<File> listFilesInApplicationDataFolder(Drive service) throws IOException
+    {
+        List<File> result = new ArrayList<File>();
+        Drive.Files.List request = service.files().list();
+        request.setQ("'appdata' in parents");
+
+        do
+        {
+            try
+            {
+                FileList files = request.execute();
+
+                result.addAll(files.getItems());
+                request.setPageToken(files.getNextPageToken());
+            }
+            catch (IOException e)
+            {
+                System.out.println("An error occurred: " + e);
+                request.setPageToken(null);
+            }
+        } while (request.getPageToken() != null &&
+                request.getPageToken().length() > 0);
+
+        return result;
+    }
+
+    /**
+     * Get the configuration file, if it exists.
+     * @param service
+     * @return
+     * @throws IOException
+     */
+    private static File getConfigurationFile(Drive service) throws IOException
+    {
+        List<File> files = listFilesInApplicationDataFolder(service);
+
+        for (File f : files)
+        {
+            if (f.getTitle().equals("config.json"))
+                return f;
+        }
+
+        return null;
+    }
+
+    /**
+     * Download a file's content.
+     *
+     * @param service Drive API service instance.
+     * @param file Drive File instance.
+     * @return InputStream containing the file's content if successful,
+     *         {@code null} otherwise.
+     */
+    private static InputStream downloadFile(Drive service, File file)
+    {
+        if (file.getDownloadUrl() != null && file.getDownloadUrl().length() > 0)
+        {
+            try
+            {
+                HttpResponse resp = service.getRequestFactory().buildGetRequest(new GenericUrl(file.getDownloadUrl())).execute();
+                return resp.getContent();
+            }
+            catch (IOException e)
+            {
+                // An error occurred.
+                e.printStackTrace();
+                return null;
+            }
+        }
+        else
+        {
+            // The file doesn't have any content stored on Drive.
+            return null;
+        }
+    }
+
+
     private void showStopMarkers(boolean show)
     {
         for (Marker marker : stopMarkers)
@@ -273,18 +463,17 @@ public class CarouselActivity extends SherlockFragmentActivity
     @Subscribe
     public void onSignUpEvent(SignUpEvent event)
     {
-        if (!mPlusClient.isConnected()) {
-            if (mConnectionResult == null) {
-                mConnectionProgressDialog.show();
-            } else {
-                try {
-                    mConnectionResult.startResolutionForResult(this, CONNECTION_FAILURE_RESOLUTION_REQUEST);
-                } catch (IntentSender.SendIntentException e) {
-                    // Try connecting again.
-                    mConnectionResult = null;
-                    Log.d(TAG, "onSignUpEvent catch block");
-                    mPlusClient.connect();
-                }
+        Log.d(TAG, "onSignUpEvent: " + mConnectionResult + " hasResolution: " + mConnectionResult.hasResolution() + " isSuccess: " + mConnectionResult.isSuccess());
+        if (mConnectionResult == null) {
+            mConnectionProgressDialog.show();
+        } else {
+            try {
+                mConnectionResult.startResolutionForResult(this, CONNECTION_FAILURE_RESOLUTION_REQUEST);
+            } catch (IntentSender.SendIntentException e) {
+                // Try connecting again.
+                mConnectionResult = null;
+                Log.d(TAG, "onSignUpEvent catch block");
+                mPlusClient.connect();
             }
         }
     }
@@ -292,6 +481,7 @@ public class CarouselActivity extends SherlockFragmentActivity
     @Subscribe
     public void onSignOutEvent(SignOutEvent event)
     {
+        Log.d(TAG, "onSignOutEvent: " + mPlusClient.isConnected());
         if (mPlusClient.isConnected()) {
             mPlusClient.clearDefaultAccount();
 
@@ -300,7 +490,7 @@ public class CarouselActivity extends SherlockFragmentActivity
                 public void onAccessRevoked(ConnectionResult status) {
                     // mPlusClient is now disconnected and access has been revoked.
                     // Trigger app logic to comply with the developer policies
-                    mPlusClient.disconnect();
+                    Log.d(TAG, "Access Revoked.");
                     mPlusClient.connect();
                 }
             });
@@ -430,8 +620,7 @@ public class CarouselActivity extends SherlockFragmentActivity
         super.onStart();
         locationClient.connect();
         Log.d(TAG, "onStart: " + (mConnectionResult == null));
-        if (mConnectionResult == null)
-            mPlusClient.connect();
+        mPlusClient.connect();
     }
 
     @Override

@@ -56,6 +56,7 @@
 
                 <category android:name="android.intent.category.DEFAULT"/>
             </intent-filter>
+            <meta-data android:name="com.google.android.apps.drive.APP_ID" android:value="id=410209462680" />
         </activity>
 
         <activity android:name=".ui.ScheduleLinkClickActivity">

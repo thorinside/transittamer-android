@@ -13,7 +13,6 @@ import com.actionbarsherlock.view.Menu;
 import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
 import com.github.kevinsawicki.wishlist.SingleTypeAdapter;
-import com.parse.*;
 import com.squareup.otto.Bus;
 import com.squareup.otto.Subscribe;
 import org.nsdev.apps.transittamer.BootstrapApplication;
