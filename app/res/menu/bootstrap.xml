@@ -31,4 +31,10 @@
             android:icon="@drawable/abs__ic_clear"
             android:showAsAction="ifRoom"/>
 
+    <item
+            android:id="@+id/menu_signout"
+            android:title="@string/menu_signout"
+            android:icon="@drawable/abs__ic_clear"
+            android:showAsAction="ifRoom"/>
+
 </menu>

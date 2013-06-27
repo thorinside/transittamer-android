@@ -142,6 +142,11 @@ public class NearestRouteStopFragment extends ItemListFragment<NearestRouteStopI
             bus.post(new SignUpEvent());
             return true;
         }
+        else if (item.getItemId() == R.id.menu_signout)
+        {
+            bus.post(new SignOutEvent());
+            return true;
+        }
         else
         {
             return super.onOptionsItemSelected(item);

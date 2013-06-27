@@ -45,6 +45,7 @@
     <string name="btn_find">Find</string>
     <string name="route_number_hint">Route Number</string>
     <string name="page_route_lookup">Find Route</string>
+    <string name="menu_signout">Sign Out</string>
 
 
 </resources>
