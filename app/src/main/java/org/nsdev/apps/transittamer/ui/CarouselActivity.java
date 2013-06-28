@@ -1,17 +1,18 @@
 package org.nsdev.apps.transittamer.ui;
 
+import android.accounts.Account;
+import android.accounts.AccountManager;
 import android.app.ProgressDialog;
-import android.content.*;
+import android.content.ContentResolver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentSender;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.SlidingPaneLayout;
-import android.text.TextUtils;
 import android.util.Log;
-import android.view.ViewGroup;
-import android.widget.FrameLayout;
-import android.widget.LinearLayout;
 import android.widget.Toast;
 import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.actionbarsherlock.view.Window;
@@ -31,7 +32,10 @@ import com.google.android.gms.maps.model.*;
 import com.google.android.gms.plus.PlusClient;
 import com.google.api.client.extensions.android.json.AndroidJsonFactory;
 import com.google.api.client.googleapis.auth.oauth2.GoogleCredential;
-import com.google.api.client.http.*;
+import com.google.api.client.http.GenericUrl;
+import com.google.api.client.http.HttpResponse;
+import com.google.api.client.http.HttpTransport;
+import com.google.api.client.http.InputStreamContent;
 import com.google.api.client.http.javanet.NetHttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.util.IOUtils;
@@ -47,7 +51,7 @@ import org.nsdev.apps.transittamer.R;
 import org.nsdev.apps.transittamer.R.id;
 import org.nsdev.apps.transittamer.TransitTamerServiceProvider;
 import org.nsdev.apps.transittamer.service.*;
-import org.nsdev.apps.transittamer.service.Location;
+import org.nsdev.apps.transittamer.sync.ConfigContentProvider;
 import retrofit.http.Callback;
 import retrofit.http.RetrofitError;
 import retrofit.http.client.Response;
@@ -143,6 +147,19 @@ public class CarouselActivity extends SherlockFragmentActivity
                 }
 
                 Toast.makeText(CarouselActivity.this, accountName + " is connected.", Toast.LENGTH_LONG).show();
+
+
+                AccountManager am = (AccountManager)getSystemService(Context.ACCOUNT_SERVICE);
+                for (Account account :am.getAccountsByType("com.google"))
+                {
+                    if (account.name.equals(accountName))
+                    {
+                        Log.d(TAG, "Setting account to sync automatically.");
+                        ContentResolver.setIsSyncable(account, ConfigContentProvider.AUTHORITY, 1);
+                        ContentResolver.setSyncAutomatically(account, ConfigContentProvider.AUTHORITY, true);
+                        ContentResolver.addPeriodicSync(account, ConfigContentProvider.AUTHORITY, new Bundle(), 60);
+                    }
+                }
 
                 AsyncTask<Void,Void,Void> task = new AsyncTask<Void, Void, Void>()
                 {
